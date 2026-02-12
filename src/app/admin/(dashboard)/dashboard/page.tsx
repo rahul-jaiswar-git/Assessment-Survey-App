@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { FileText, Users, CheckCircle, Clock } from 'lucide-react'
+import Link from 'next/link'
 
 export default async function DashboardPage() {
   const supabase = await createClient()

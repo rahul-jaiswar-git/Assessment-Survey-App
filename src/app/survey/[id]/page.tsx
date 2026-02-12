@@ -5,9 +5,9 @@ import SurveyForm from '@/components/SurveyForm'
 export default async function PublicSurveyPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }) {
-  const { id } = await params
+  const { id } = params
   const supabase = await createClient()
 
   const { data: survey } = await supabase
