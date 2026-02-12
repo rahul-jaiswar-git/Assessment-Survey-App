@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -27,6 +28,9 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.redirect(new URL('/admin/surveys?error=update', request.url))
   }
+
+  revalidatePath('/admin/surveys')
+  revalidatePath('/admin/dashboard')
 
   return NextResponse.redirect(new URL('/admin/surveys', request.url))
 }

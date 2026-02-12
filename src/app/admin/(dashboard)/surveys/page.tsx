@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Plus, Search, Filter, MoreVertical, ExternalLink } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SurveysPage() {
   const supabase = await createClient()
 

@@ -155,7 +155,7 @@ export default function NewSurveyPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-4 py-2 text-xl font-bold border-b-2 border-gray-100 focus:border-gray-900 outline-none transition-all"
+              className="w-full px-4 py-2 text-xl font-bold border-b-2 border-gray-100 focus:border-gray-900 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
               placeholder="Untitled Survey"
             />
           </div>
@@ -165,7 +165,7 @@ export default function NewSurveyPage() {
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
               placeholder="Enter survey description..."
               rows={3}
             />
@@ -176,7 +176,7 @@ export default function NewSurveyPage() {
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as any)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 bg-white"
             >
               <option value="INDUSTRIAL">Industrial</option>
               <option value="PROFESSIONAL">Professional</option>
@@ -196,7 +196,7 @@ export default function NewSurveyPage() {
                     type="text"
                     value={question.question_text}
                     onChange={(e) => updateQuestion(question.id, { question_text: e.target.value })}
-                    className="w-full px-4 py-2 text-lg font-semibold border-b border-gray-100 focus:border-gray-900 outline-none transition-all"
+                    className="w-full px-4 py-2 text-lg font-semibold border-b border-gray-100 focus:border-gray-900 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
                     placeholder={`Question ${qIndex + 1}`}
                   />
                 </div>
@@ -222,7 +222,7 @@ export default function NewSurveyPage() {
                         type="text"
                         value={option}
                         onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
-                        className="flex-1 px-2 py-1 border-b border-transparent focus:border-gray-200 outline-none"
+                        className="flex-1 px-2 py-1 border-b border-transparent focus:border-gray-200 outline-none text-gray-900 placeholder:text-gray-500 bg-white"
                         placeholder={`Option ${oIndex + 1}`}
                       />
                       {question.options.length > 1 && (
