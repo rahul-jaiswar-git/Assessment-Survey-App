@@ -15,7 +15,6 @@ export default async function PublicSurveyPage({
     .from('surveys')
     .select('*')
     .eq('id', id)
-    .eq('status', 'PUBLISHED')
     .single()
 
   if (!survey) {
