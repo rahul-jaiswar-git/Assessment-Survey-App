@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAdminRole } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, FileText, BarChart3, LogOut, UserCircle } from 'lucide-react'
@@ -19,14 +19,9 @@ export default async function AdminDashboardLayout({
     redirect('/admin/login')
   }
 
-  // Check if user is in the admins table
-  const { data: adminData } = await supabase
-    .from('admins')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const role = await getAdminRole(user.id)
 
-  if (!adminData) {
+  if (!role) {
     // If authenticated but not in admins table, sign out and redirect
     await supabase.auth.signOut()
     redirect('/admin/login?error=Unauthorized')
@@ -52,7 +47,7 @@ export default async function AdminDashboardLayout({
             <UserCircle className="w-8 h-8 text-gray-400" />
             <div className="overflow-hidden">
               <p className="text-sm font-medium truncate">{user.email}</p>
-              <p className="text-xs text-gray-500 capitalize">{adminData.role.toLowerCase().replace('_', ' ')}</p>
+              <p className="text-xs text-gray-500 capitalize">{role.toLowerCase().replace('_', ' ')}</p>
             </div>
           </div>
           <form action="/auth/signout" method="post">

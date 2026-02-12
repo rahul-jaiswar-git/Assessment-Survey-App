@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { createClient as createSRClient } from '@supabase/supabase-js'
 
 export async function createClient() {
   const cookieStore = await cookies()
@@ -26,4 +27,19 @@ export async function createClient() {
       },
     }
   )
+}
+
+export async function getAdminRole(userId: string) {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) {
+    return null
+  }
+  const supabase = createSRClient(url, serviceKey)
+  const { data } = await supabase
+    .from('admins')
+    .select('role')
+    .eq('id', userId)
+    .single()
+  return data?.role ?? null
 }
