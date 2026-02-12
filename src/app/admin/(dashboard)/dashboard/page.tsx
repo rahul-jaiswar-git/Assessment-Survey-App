@@ -20,6 +20,16 @@ export default async function DashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  const { count: publishedCount } = await supabase
+    .from('surveys')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'PUBLISHED')
+
+  const { count: draftCount } = await supabase
+    .from('surveys')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'DRAFT')
+
   const stats = [
     {
       label: 'Total Surveys',
@@ -37,14 +47,14 @@ export default async function DashboardPage() {
     },
     {
       label: 'Published Surveys',
-      value: '---', // Will calculate below
+      value: publishedCount || 0,
       icon: CheckCircle,
       color: 'text-purple-600',
       bg: 'bg-purple-100',
     },
     {
       label: 'Draft Surveys',
-      value: '---', // Will calculate below
+      value: draftCount || 0,
       icon: Clock,
       color: 'text-orange-600',
       bg: 'bg-orange-100',

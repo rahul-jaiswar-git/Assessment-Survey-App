@@ -29,8 +29,9 @@ export default async function AdminDashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
+
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col">
+      <aside className="w-56 bg-gray-900 text-white flex flex-col">
         <div className="p-6">
           <Link href="/admin/dashboard" className="text-xl font-bold flex items-center gap-2">
             <LayoutDashboard className="w-6 h-6" />
@@ -46,6 +47,7 @@ export default async function AdminDashboardLayout({
           <div className="flex items-center gap-3 px-2 py-3 mb-2">
             <UserCircle className="w-8 h-8 text-gray-400" />
             <div className="overflow-hidden">
+
               <p className="text-sm font-medium truncate">{user.email}</p>
               <p className="text-xs text-gray-500 capitalize">{role.toLowerCase().replace('_', ' ')}</p>
             </div>
