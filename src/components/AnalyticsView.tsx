@@ -80,7 +80,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
           <select
             value={selectedSurvey?.id || ''}
             onChange={(e) => router.push(`/admin/analytics?surveyId=${e.target.value}`)}
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 bg-white"
           >
             <option value="">Choose a survey...</option>
             {surveys.map((s) => (

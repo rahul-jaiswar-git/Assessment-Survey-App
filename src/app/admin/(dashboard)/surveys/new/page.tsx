@@ -203,7 +203,7 @@ export default function NewSurveyPage() {
                 <select
                   value={question.question_type}
                   onChange={(e) => updateQuestion(question.id, { question_type: e.target.value as QuestionType })}
-                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
                 >
                   <option value="SHORT_TEXT">Short Text</option>
                   <option value="LONG_TEXT">Long Text</option>
