@@ -94,9 +94,36 @@ export default async function SurveysPage() {
                             <ExternalLink className="w-5 h-5" />
                           </Link>
                         )}
-                        <button className="p-2 text-gray-400 hover:text-gray-900 transition-colors">
-                          <MoreVertical className="w-5 h-5" />
-                        </button>
+                        <details className="relative">
+                          <summary className="list-none p-2 text-gray-400 hover:text-gray-900 transition-colors cursor-pointer">
+                            <MoreVertical className="w-5 h-5" />
+                          </summary>
+                          <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                            <form action="/admin/surveys/toggle" method="post" className="border-b border-gray-100">
+                              <input type="hidden" name="survey_id" value={survey.id} />
+                              <input
+                                type="hidden"
+                                name="next_status"
+                                value={survey.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'}
+                              />
+                              <button
+                                type="submit"
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                {survey.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
+                              </button>
+                            </form>
+                            {survey.status === 'PUBLISHED' && (
+                              <a
+                                href={`/survey/${survey.id}`}
+                                target="_blank"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                Open Public Link
+                              </a>
+                            )}
+                          </div>
+                        </details>
                       </div>
                     </td>
                   </tr>
