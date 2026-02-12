@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Plus, Search, Filter, MoreVertical, ExternalLink } from 'lucide-react'
+import { Plus, Search, Filter } from 'lucide-react'
+import SurveyActions from '@/components/SurveyActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,32 +86,8 @@ export default async function SurveysPage() {
                       --
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <form action="/admin/surveys/toggle" method="post">
-                          <input type="hidden" name="survey_id" value={survey.id} />
-                          <input
-                            type="hidden"
-                            name="next_status"
-                            value={survey.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'}
-                          />
-                          <button
-                            type="submit"
-                            className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-                            title={survey.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
-                          >
-                            {survey.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
-                          </button>
-                        </form>
-                        {survey.status === 'PUBLISHED' && (
-                          <Link
-                            href={`/survey/${survey.id}`}
-                            target="_blank"
-                            className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-                            title="Open Public Link"
-                          >
-                            Open Link
-                          </Link>
-                        )}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <SurveyActions id={survey.id} status={survey.status} />
                       </div>
                     </td>
                   </tr>
