@@ -35,7 +35,7 @@ export default async function SurveysPage() {
             <input
               type="text"
               placeholder="Search surveys..."
-              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -86,46 +86,31 @@ export default async function SurveysPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <form action="/admin/surveys/toggle" method="post">
+                          <input type="hidden" name="survey_id" value={survey.id} />
+                          <input
+                            type="hidden"
+                            name="next_status"
+                            value={survey.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'}
+                          />
+                          <button
+                            type="submit"
+                            className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                            title={survey.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
+                          >
+                            {survey.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
+                          </button>
+                        </form>
                         {survey.status === 'PUBLISHED' && (
                           <Link
                             href={`/survey/${survey.id}`}
                             target="_blank"
-                            className="p-2 text-gray-400 hover:text-gray-900 transition-colors"
-                            title="View Public Link"
+                            className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                            title="Open Public Link"
                           >
-                            <ExternalLink className="w-5 h-5" />
+                            Open Link
                           </Link>
                         )}
-                        <details className="relative">
-                          <summary className="list-none p-2 text-gray-400 hover:text-gray-900 transition-colors cursor-pointer">
-                            <MoreVertical className="w-5 h-5" />
-                          </summary>
-                          <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                            <form action="/admin/surveys/toggle" method="post" className="border-b border-gray-100">
-                              <input type="hidden" name="survey_id" value={survey.id} />
-                              <input
-                                type="hidden"
-                                name="next_status"
-                                value={survey.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'}
-                              />
-                              <button
-                                type="submit"
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                              >
-                                {survey.status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
-                              </button>
-                            </form>
-                            {survey.status === 'PUBLISHED' && (
-                              <a
-                                href={`/survey/${survey.id}`}
-                                target="_blank"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                              >
-                                Open Public Link
-                              </a>
-                            )}
-                          </div>
-                        </details>
                       </div>
                     </td>
                   </tr>

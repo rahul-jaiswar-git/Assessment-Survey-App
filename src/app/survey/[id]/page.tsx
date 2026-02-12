@@ -13,7 +13,7 @@ export default async function PublicSurveyPage({
 
   const { data: survey } = await supabase
     .from('surveys')
-    .select('*, questions(*)')
+    .select('*')
     .eq('id', id)
     .eq('status', 'PUBLISHED')
     .single()
@@ -22,8 +22,13 @@ export default async function PublicSurveyPage({
     notFound()
   }
 
-  // Sort questions by order_index
-  const sortedQuestions = survey.questions.sort((a: any, b: any) => a.order_index - b.order_index)
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('*')
+    .eq('survey_id', id)
+    .order('order_index', { ascending: true })
+
+  const sortedQuestions = questions || []
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-6">
