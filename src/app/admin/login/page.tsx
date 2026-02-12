@@ -27,23 +27,6 @@ export default function LoginPage() {
       if (error) {
         setError(error.message)
       } else {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        if (!user) {
-          setError('Login failed. Please try again.')
-          return
-        }
-        const { data: adminData } = await supabase
-          .from('admins')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-        if (!adminData) {
-          setError('Unauthorized: Your account is not in admins.')
-          await supabase.auth.signOut()
-          return
-        }
         router.push('/admin/dashboard')
         router.refresh()
       }
