@@ -10,27 +10,25 @@ export default async function PublicSurveyPage({
 }) {
   const { id } = params
   const supabase = await createClient()
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-  const { data: surveyFromAnon } = await supabase
-    .from('surveys')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  let survey = surveyFromAnon
-
-  if (!survey) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (url && serviceKey) {
-      const srv = createSRClient(url, serviceKey)
-      const { data: srvSurvey } = await srv
-        .from('surveys')
-        .select('*')
-        .eq('id', id)
-        .single()
-      survey = srvSurvey || null
-    }
+  let survey = null as any
+  if (url && serviceKey) {
+    const srv = createSRClient(url, serviceKey)
+    const { data: srvSurvey } = await srv
+      .from('surveys')
+      .select('*')
+      .eq('id', id)
+      .single()
+    survey = srvSurvey || null
+  } else {
+    const { data: surveyFromAnon } = await supabase
+      .from('surveys')
+      .select('*')
+      .eq('id', id)
+      .single()
+    survey = surveyFromAnon || null
   }
 
   if (!survey) {
@@ -51,25 +49,22 @@ export default async function PublicSurveyPage({
     )
   }
 
-  const { data: questionsFromAnon } = await supabase
-    .from('questions')
-    .select('*')
-    .eq('survey_id', id)
-    .order('order_index', { ascending: true })
-
-  let questions = questionsFromAnon
-  if (!questions || questions.length === 0) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-    if (url && serviceKey) {
-      const srv = createSRClient(url, serviceKey)
-      const { data: srvQuestions } = await srv
-        .from('questions')
-        .select('*')
-        .eq('survey_id', id)
-        .order('order_index', { ascending: true })
-      questions = srvQuestions || []
-    }
+  let questions = [] as any[]
+  if (url && serviceKey) {
+    const srv = createSRClient(url, serviceKey)
+    const { data: srvQuestions } = await srv
+      .from('questions')
+      .select('*')
+      .eq('survey_id', id)
+      .order('order_index', { ascending: true })
+    questions = srvQuestions || []
+  } else {
+    const { data: questionsFromAnon } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('survey_id', id)
+      .order('order_index', { ascending: true })
+    questions = questionsFromAnon || []
   }
 
   const sortedQuestions = questions || []
