@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
 import SurveyForm from '@/components/SurveyForm'
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +17,21 @@ export default async function PublicSurveyPage({
     .single()
 
   if (!survey) {
-    notFound()
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div className="h-3 bg-gray-900 w-full" />
+            <div className="p-8">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey unavailable</h1>
+              <p className="text-gray-600">
+                The survey link is invalid or the survey is not accessible. Please verify the link or try again later.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const { data: questions } = await supabase
