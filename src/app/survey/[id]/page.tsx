@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSRClient } from '@supabase/supabase-js'
 import SurveyForm from '@/components/SurveyForm'
 export const dynamic = 'force-dynamic'
 
@@ -10,11 +11,27 @@ export default async function PublicSurveyPage({
   const { id } = params
   const supabase = await createClient()
 
-  const { data: survey } = await supabase
+  const { data: surveyFromAnon } = await supabase
     .from('surveys')
     .select('*')
     .eq('id', id)
     .single()
+
+  let survey = surveyFromAnon
+
+  if (!survey) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (url && serviceKey) {
+      const srv = createSRClient(url, serviceKey)
+      const { data: srvSurvey } = await srv
+        .from('surveys')
+        .select('*')
+        .eq('id', id)
+        .single()
+      survey = srvSurvey || null
+    }
+  }
 
   if (!survey) {
     return (
@@ -34,11 +51,26 @@ export default async function PublicSurveyPage({
     )
   }
 
-  const { data: questions } = await supabase
+  const { data: questionsFromAnon } = await supabase
     .from('questions')
     .select('*')
     .eq('survey_id', id)
     .order('order_index', { ascending: true })
+
+  let questions = questionsFromAnon
+  if (!questions || questions.length === 0) {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (url && serviceKey) {
+      const srv = createSRClient(url, serviceKey)
+      const { data: srvQuestions } = await srv
+        .from('questions')
+        .select('*')
+        .eq('survey_id', id)
+        .order('order_index', { ascending: true })
+      questions = srvQuestions || []
+    }
+  }
 
   const sortedQuestions = questions || []
 

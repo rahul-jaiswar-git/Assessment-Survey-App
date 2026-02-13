@@ -22,6 +22,7 @@
 - Disabled caching (force-dynamic) for fresh content.
 - Removed status filter to allow viewing any survey status.
 - Added graceful fallback UI instead of framework 404 when survey not found/inaccessible.
+- Implemented server-side service role fallback fetch when anon read returns no data.
 
 ## Forms & UI Consistency
 - Set black text (text-gray-900), readable placeholders, and white backgrounds for:
@@ -46,7 +47,7 @@
 ## Known/Observed Issues & Resolutions
 - Public link 404:
   - Root causes: status filtering in code, RLS blocking access, or invalid survey ID.
-  - Resolutions: removed status filter in page code; provided RLS SQL; added fallback UI.
+  - Resolutions: removed status filter in page code; provided RLS SQL; added fallback UI; added service role fallback for reliability.
 - Action menu scrolling:
   - Resolution: inline buttons + client actions component.
 - Stale dashboard/surveys after toggles:
