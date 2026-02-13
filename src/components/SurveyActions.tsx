@@ -7,12 +7,14 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  const togglePublish = async () => {
-    const form = new FormData()
-    form.append('survey_id', id)
-    form.append('next_status', status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED')
-    await fetch('/admin/surveys/toggle', { method: 'POST', body: form })
-    startTransition(() => router.refresh())
+  const togglePublish = () => {
+    startTransition(async () => {
+      const form = new FormData()
+      form.append('survey_id', id)
+      form.append('next_status', status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED')
+      await fetch('/admin/surveys/toggle', { method: 'POST', body: form })
+      router.refresh()
+    })
   }
 
   return (
@@ -21,7 +23,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
         type="button"
         onClick={togglePublish}
         disabled={isPending}
-        className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+        className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50 cursor-pointer active:scale-[0.98] transition-transform"
         title={status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
       >
         {isPending ? 'Updating...' : status === 'PUBLISHED' ? 'Unpublish' : 'Publish'}
@@ -29,7 +31,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
       <a
         href={`/survey/${id}`}
         target="_blank"
-        className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+        className="px-3 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer"
         title="Open Public Link"
       >
         Open Link

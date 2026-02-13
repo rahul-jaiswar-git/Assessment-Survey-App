@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { CheckCircle, AlertCircle, Send } from 'lucide-react'
 
 interface SurveyFormProps {
@@ -14,7 +13,6 @@ export default function SurveyForm({ surveyId, questions }: SurveyFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const supabase = createClient()
 
   const handleAnswerChange = (questionId: string, value: any) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }))
@@ -35,27 +33,19 @@ export default function SurveyForm({ surveyId, questions }: SurveyFormProps) {
     setError(null)
 
     try {
-      // 1. Create response record
-      const { data: response, error: responseError } = await supabase
-        .from('responses')
-        .insert({ survey_id: surveyId })
-        .select()
-        .single()
+      const res = await fetch(`/survey/${surveyId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ answers }),
+      })
 
-      if (responseError) throw responseError
+      const data = await res.json().catch(() => ({}))
 
-      // 2. Create answers records
-      const answersToInsert = Object.entries(answers).map(([questionId, value]) => ({
-        response_id: response.id,
-        question_id: questionId,
-        answer_value: value,
-      }))
-
-      const { error: answersError } = await supabase
-        .from('answers')
-        .insert(answersToInsert)
-
-      if (answersError) throw answersError
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || 'Failed to submit survey.')
+      }
 
       setIsSuccess(true)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -177,7 +167,7 @@ export default function SurveyForm({ surveyId, questions }: SurveyFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg"
+        className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
       >
         {isSubmitting ? (
           <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
