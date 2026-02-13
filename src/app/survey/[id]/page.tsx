@@ -2,13 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createSRClient } from '@supabase/supabase-js'
 import SurveyForm from '@/components/SurveyForm'
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export default async function PublicSurveyPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
-  const { id } = params
+  const { id } = await params
   const supabase = await createClient()
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
