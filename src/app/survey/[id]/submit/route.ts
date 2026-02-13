@@ -1,12 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createSRClient } from '@supabase/supabase-js'
 
 export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: surveyId } = params
+    const { id: surveyId } = await params
     const body = await req.json().catch(() => ({}))
     const { answers } = body as { answers?: Record<string, any> }
 
