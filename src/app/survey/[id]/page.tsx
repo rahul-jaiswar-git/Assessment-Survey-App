@@ -88,7 +88,7 @@ export default async function PublicSurveyPage({
           </div>
         </div>
 
-        <SurveyForm surveyId={survey.id} questions={sortedQuestions} />
+        <SurveyForm surveyId={survey.id} questions={sortedQuestions} status={survey.status} />
       </div>
     </div>
   )

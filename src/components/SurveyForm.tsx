@@ -6,9 +6,10 @@ import { CheckCircle, AlertCircle, Send } from 'lucide-react'
 interface SurveyFormProps {
   surveyId: string
   questions: any[]
+  status?: 'DRAFT' | 'PUBLISHED'
 }
 
-export default function SurveyForm({ surveyId, questions }: SurveyFormProps) {
+export default function SurveyForm({ surveyId, questions, status }: SurveyFormProps) {
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -75,8 +76,15 @@ export default function SurveyForm({ surveyId, questions }: SurveyFormProps) {
     )
   }
 
+  const isDraft = status && status !== 'PUBLISHED'
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 pb-20">
+      {isDraft && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-xl">
+          This survey is currently in draft. Public responses are disabled until it is published.
+        </div>
+      )}
       {questions.map((question) => (
         <div key={question.id} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
           <label className="block text-lg font-semibold text-gray-900 mb-4">
@@ -166,7 +174,7 @@ export default function SurveyForm({ surveyId, questions }: SurveyFormProps) {
 
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || isDraft}
         className="w-full bg-gray-900 text-white font-bold py-4 rounded-2xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg cursor-pointer"
       >
         {isSubmitting ? (
