@@ -48,6 +48,10 @@
 - Public link 404:
   - Root causes: status filtering in code, RLS blocking access, or invalid survey ID.
   - Resolutions: removed status filter in page code; provided RLS SQL; added fallback UI; added service role fallback for reliability.
+  - Persistent cases found to be environment mismatch on Vercel (URL/key not pointing to the same project). Verification steps:
+    - Confirm Vercel envs match local: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+    - Test REST: GET /rest/v1/surveys?id=eq.<survey_id> with anon key headers; expect one row
+    - If REST returns, app should render; otherwise fix envs and redeploy
 - Action menu scrolling:
   - Resolution: inline buttons + client actions component.
 - Stale dashboard/surveys after toggles:
