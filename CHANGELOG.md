@@ -23,6 +23,7 @@
 - Removed status filter to allow viewing any survey status.
 - Added graceful fallback UI instead of framework 404 when survey not found/inaccessible.
 - Implemented server-side service role fallback fetch when anon read returns no data.
+- Explicitly set runtime to nodejs for server-side fetch and env access.
 
 ## Forms & UI Consistency
 - Set black text (text-gray-900), readable placeholders, and white backgrounds for:
@@ -52,6 +53,15 @@
     - Confirm Vercel envs match local: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
     - Test REST: GET /rest/v1/surveys?id=eq.<survey_id> with anon key headers; expect one row
     - If REST returns, app should render; otherwise fix envs and redeploy
+
+## REST Endpoint Testing & Diagnostics
+- Supabase host is API-only; use /rest/v1/<table> with headers:
+  - apikey: ANON_KEY
+  - Authorization: Bearer ANON_KEY
+- Example endpoints:
+  - /rest/v1/surveys?id=eq.<survey_id>
+  - /rest/v1/questions?survey_id=eq.<survey_id>&order=order_index.asc
+- Common error: {"message":"No API key found in request"} → you used the address bar without headers. Use Postman/curl or DevTools fetch with required headers.
 - Action menu scrolling:
   - Resolution: inline buttons + client actions component.
 - Stale dashboard/surveys after toggles:
