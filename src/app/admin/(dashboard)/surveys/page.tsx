@@ -10,7 +10,7 @@ export default async function SurveysPage() {
 
   const { data: surveys } = await supabase
     .from('surveys')
-    .select('*, questions(count)')
+    .select('*, questions(count), responses(count)')
     .order('created_at', { ascending: false })
 
   return (
@@ -83,7 +83,7 @@ export default async function SurveysPage() {
                       {survey.questions?.[0]?.count || 0}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      --
+                      {survey.responses?.[0]?.count || 0}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
