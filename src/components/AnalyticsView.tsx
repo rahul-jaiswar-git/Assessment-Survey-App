@@ -176,7 +176,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
   }
 
   const handlePrint = useReactToPrint({
-    content: () => analyticsRef.current,
+    contentRef: analyticsRef,
     documentTitle: selectedSurvey ? `${selectedSurvey.title}_analytics` : 'survey_analytics',
   })
 
