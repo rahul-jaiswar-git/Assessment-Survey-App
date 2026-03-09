@@ -30,6 +30,19 @@ export async function POST(
 
     const supabase = createSRClient(url, serviceKey)
 
+    const { data: survey } = await supabase
+      .from('surveys')
+      .select('status')
+      .eq('id', surveyId)
+      .single()
+
+    if (!survey || survey.status !== 'PUBLISHED') {
+      return NextResponse.json(
+        { error: 'Survey is not published. Submissions are disabled.' },
+        { status: 403 }
+      )
+    }
+
     // 1. Create response record
     const { data: response, error: responseError } = await supabase
       .from('responses')

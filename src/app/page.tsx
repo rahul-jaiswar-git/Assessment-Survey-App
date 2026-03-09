@@ -4,21 +4,21 @@ import { Factory, Briefcase, GraduationCap } from 'lucide-react'
 const surveyCategories = [
   {
     id: 'INDUSTRIAL',
-    title: 'Industrial Survey',
+    title: 'Company Health Assessment Climate Survey',
     description: 'Request a survey for industrial operations, manufacturing, or logistics.',
     icon: Factory,
     color: 'bg-blue-500',
   },
   {
     id: 'PROFESSIONAL',
-    title: 'Professional Survey',
+    title: 'Professional Level Assessment Individual Capability Study',
     description: 'Request a survey for corporate, consulting, or professional services.',
     icon: Briefcase,
     color: 'bg-emerald-500',
   },
   {
     id: 'SKILL_ASSESSMENT',
-    title: 'Skill Assessment',
+    title: 'Skill level Assessment Individual Expertise Study',
     description: 'Request a survey for talent evaluation or educational assessments.',
     icon: GraduationCap,
     color: 'bg-purple-500',
