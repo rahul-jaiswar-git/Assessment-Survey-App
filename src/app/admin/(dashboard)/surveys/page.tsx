@@ -95,7 +95,7 @@ export default async function SurveysPage() {
               ) : (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                    No surveys found. Click "New Survey" to get started.
+                    No surveys found. Click &quot;New Survey&quot; to get started.
                   </td>
                 </tr>
               )}

@@ -7,6 +7,7 @@ import { Plus, Trash2, GripVertical, Save, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
 type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING'
+type Category = 'INDUSTRIAL' | 'PROFESSIONAL' | 'SKILL_ASSESSMENT'
 
 interface Question {
   id: string
@@ -22,7 +23,7 @@ export default function NewSurveyPage() {
   
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState<'INDUSTRIAL' | 'PROFESSIONAL' | 'SKILL_ASSESSMENT'>('INDUSTRIAL')
+  const [category, setCategory] = useState<Category>('INDUSTRIAL')
   const [questions, setQuestions] = useState<Question[]>([
     {
       id: crypto.randomUUID(),
@@ -175,7 +176,7 @@ export default function NewSurveyPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value as any)}
+              onChange={(e) => setCategory(e.target.value as Category)}
               className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 bg-white"
             >
               <option value="INDUSTRIAL">Industrial</option>
