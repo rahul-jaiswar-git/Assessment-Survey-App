@@ -11,6 +11,7 @@ function RequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -124,6 +125,20 @@ function RequestForm() {
           />
         </div>
 
+        <p className="text-sm font-semibold text-gray-700">Voluntary Disclosure</p>
+        <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <input
+            type="checkbox"
+            id="terms"
+            checked={agreedToTerms}
+            onChange={(e) => setAgreedToTerms(e.target.checked)}
+            className="mt-1 w-4 h-4 accent-gray-900 cursor-pointer"
+          />
+          <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
+            I voluntarily agree to provide my information for the purpose of this survey request. I understand that my details will be used solely to process my request and will not be shared with third parties.
+          </label>
+        </div>
+
         {error && (
           <div className="flex items-center text-red-600 text-sm bg-red-50 p-3 rounded-lg">
             <AlertCircle className="w-4 h-4 mr-2" />
@@ -133,7 +148,7 @@ function RequestForm() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || !agreedToTerms}
           className="w-full bg-gray-900 text-white font-semibold py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
         >
           {isSubmitting ? (

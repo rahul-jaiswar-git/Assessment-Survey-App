@@ -39,6 +39,8 @@ export interface Database {
           created_by: string | null
           created_at: string
           updated_at: string
+          starts_at: string | null
+          ends_at: string | null
         }
         Insert: {
           id?: string
@@ -49,6 +51,8 @@ export interface Database {
           created_by?: string | null
           created_at?: string
           updated_at?: string
+          starts_at?: string | null
+          ends_at?: string | null
         }
         Update: {
           id?: string
@@ -59,6 +63,8 @@ export interface Database {
           created_by?: string | null
           created_at?: string
           updated_at?: string
+          starts_at?: string | null
+          ends_at?: string | null
         }
       }
       questions: {

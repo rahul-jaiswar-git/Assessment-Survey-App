@@ -1,17 +1,31 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Lock, Mail, AlertCircle } from 'lucide-react'
+import { Lock, Mail, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const err = searchParams.get('error')
+    if (err) {
+      if (err.toLowerCase() === 'unauthorized') {
+        setError('Your account is not authorized for admin access. Please contact the Super Admin.')
+      } else {
+        setError(err)
+      }
+    }
+  }, [searchParams])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,13 +87,25 @@ export default function LoginPage() {
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
                 placeholder="••••••••"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
+                ) : (
+                  <Eye className="w-5 h-5 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors" />
+                )}
+              </button>
             </div>
           </div>
 
