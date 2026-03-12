@@ -22,6 +22,10 @@ export default async function AdminDashboardLayout({
   const role = await getAdminRole(user.id)
 
   if (!role) {
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      await supabase.auth.signOut()
+      redirect('/admin/login?error=Server configuration missing: SUPABASE_SERVICE_ROLE_KEY')
+    }
     // If authenticated but not in admins table, sign out and redirect
     await supabase.auth.signOut()
     redirect('/admin/login?error=Unauthorized')
