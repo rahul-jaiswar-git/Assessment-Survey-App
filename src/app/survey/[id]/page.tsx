@@ -50,6 +50,29 @@ export default async function PublicSurveyPage({
     )
   }
 
+  const now = new Date()
+  if (survey.starts_at && new Date(survey.starts_at) > now) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Not Yet Open</h1>
+          <p className="text-gray-600">This survey opens on {new Date(survey.starts_at).toLocaleString()}. Please come back then.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (survey.ends_at && new Date(survey.ends_at) < now) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Closed</h1>
+          <p className="text-gray-600">This survey closed on {new Date(survey.ends_at).toLocaleString()}. Submissions are no longer accepted.</p>
+        </div>
+      </div>
+    )
+  }
+
   let questions = [] as any[]
   if (url && serviceKey) {
     const srv = createSRClient(url, serviceKey)

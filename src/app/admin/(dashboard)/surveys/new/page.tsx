@@ -24,6 +24,8 @@ export default function NewSurveyPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<Category>('INDUSTRIAL')
+  const [startsAt, setStartsAt] = useState('')
+  const [endsAt, setEndsAt] = useState('')
   const [questions, setQuestions] = useState<Question[]>([
     {
       id: crypto.randomUUID(),
@@ -105,6 +107,8 @@ export default function NewSurveyPage() {
           description,
           category,
           status,
+          starts_at: startsAt ? new Date(startsAt).toISOString() : null,
+          ends_at: endsAt ? new Date(endsAt).toISOString() : null,
           created_by: user?.id,
         })
         .select()
@@ -183,6 +187,39 @@ export default function NewSurveyPage() {
               <option value="PROFESSIONAL">Professional</option>
               <option value="SKILL_ASSESSMENT">Skill Assessment</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Survey Schedule
+            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              Set when this survey is open for responses. Leave blank for no time restriction.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Start Date &amp; Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={startsAt}
+                  onChange={(e) => setStartsAt(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 bg-white outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  End Date &amp; Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={endsAt}
+                  onChange={(e) => setEndsAt(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 bg-white outline-none"
+                />
+              </div>
+            </div>
           </div>
         </div>
 
