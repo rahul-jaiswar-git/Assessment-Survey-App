@@ -1,15 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createSRClient } from '@supabase/supabase-js'
 import SurveyForm from '@/components/SurveyForm'
+import { Eye } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export default async function PublicSurveyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ preview?: string }>
 }) {
   const { id } = await params
+  const { preview } = await searchParams
+  const isPreview = preview === 'true'
   const supabase = await createClient()
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -50,27 +55,43 @@ export default async function PublicSurveyPage({
     )
   }
 
-  const now = new Date()
-  if (survey.starts_at && new Date(survey.starts_at) > now) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Not Yet Open</h1>
-          <p className="text-gray-600">This survey opens on {new Date(survey.starts_at).toLocaleString()}. Please come back then.</p>
-        </div>
-      </div>
-    )
+  let isAdminPreview = false
+  if (isPreview) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user && url && serviceKey) {
+      const srv = createSRClient(url, serviceKey)
+      const { data: adminRow } = await srv
+        .from('admins')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+      isAdminPreview = !!adminRow
+    }
   }
 
-  if (survey.ends_at && new Date(survey.ends_at) < now) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Closed</h1>
-          <p className="text-gray-600">This survey closed on {new Date(survey.ends_at).toLocaleString()}. Submissions are no longer accepted.</p>
+  const now = new Date()
+  if (!isAdminPreview) {
+    if (survey.starts_at && new Date(survey.starts_at) > now) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Not Yet Open</h1>
+            <p className="text-gray-600">This survey opens on {new Date(survey.starts_at).toLocaleString()}. Please come back then.</p>
+          </div>
         </div>
-      </div>
-    )
+      )
+    }
+  
+    if (survey.ends_at && new Date(survey.ends_at) < now) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Closed</h1>
+            <p className="text-gray-600">This survey closed on {new Date(survey.ends_at).toLocaleString()}. Submissions are no longer accepted.</p>
+          </div>
+        </div>
+      )
+    }
   }
 
   let questions = [] as any[]
@@ -110,6 +131,13 @@ export default async function PublicSurveyPage({
             </div>
           </div>
         </div>
+
+        {isAdminPreview && (
+          <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            Admin Preview Mode — responses submitted here will be saved to the database. This survey may not be publicly accessible yet.
+          </div>
+        )}
 
         <SurveyForm surveyId={survey.id} questions={sortedQuestions} status={survey.status} />
       </div>
