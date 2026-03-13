@@ -117,6 +117,20 @@ export default async function ReviewSurveyPage({
         <div className="divide-y divide-gray-100">
           {(questions || []).map((q: any, idx: number) => (
             <div key={q.id} className="p-6">
+              {q.question_type === 'SECTION' ? (
+                <div className="p-4 border-l-4 border-blue-400 bg-blue-50 rounded-r-xl">
+                  <div className="text-xs font-semibold text-blue-700 mb-1">📋 Section Divider</div>
+                  <div className="text-gray-900 font-bold text-lg">
+                    {q.question_text}
+                  </div>
+                  {q.options && typeof q.options === 'object' && (q.options as any).description && (
+                    <div className="text-sm text-gray-600 mt-1">
+                      {(q.options as any).description}
+                    </div>
+                  )}
+                </div>
+              ) : (
+              <>
               <div className="flex items-start justify-between mb-2">
                 <div className="text-gray-900 font-medium">
                   {idx + 1}. {q.question_text}
@@ -152,6 +166,8 @@ export default async function ReviewSurveyPage({
               <div className="mt-2 text-xs text-gray-500">
                 Required: {q.is_required ? 'Yes' : 'No'}
               </div>
+              </>
+              )}
             </div>
           ))}
         </div>
