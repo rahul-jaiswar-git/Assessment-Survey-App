@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { Eye } from 'lucide-react'
 
 export default async function ReviewSurveyPage({
   params,
@@ -44,6 +45,14 @@ export default async function ReviewSurveyPage({
           ← Back to Surveys
         </Link>
         <div className="flex items-center gap-2">
+          <a
+            href={`/survey/${id}?preview=true`}
+            target="_blank"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors cursor-pointer active:scale-95 select-none"
+          >
+            <Eye className="w-4 h-4" />
+            Preview Form
+          </a>
           <Link
             href={`/admin/surveys/${id}/edit`}
             className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
