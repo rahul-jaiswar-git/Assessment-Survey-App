@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Trash2, Save } from 'lucide-react'
 
-type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING'
+type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ'
 type Category = 'INDUSTRIAL' | 'PROFESSIONAL' | 'SKILL_ASSESSMENT'
 
 interface Question {
@@ -14,6 +14,7 @@ interface Question {
   question_text: string
   question_type: QuestionType
   options: string[]
+  correct_answer: string
   is_required: boolean
 }
 
@@ -70,18 +71,31 @@ export default function EditSurveyPage() {
           setStartsAt(survey.starts_at ? toLocalInputValue(survey.starts_at) : '')
           setEndsAt(survey.ends_at ? toLocalInputValue(survey.ends_at) : '')
         }
-        const normQs: Question[] = (qs || []).map((q: any) => ({
-          id: q.id,
-          question_text: q.question_text || '',
-          question_type: q.question_type,
-          options: Array.isArray(q.options) ? q.options : [],
-          is_required: !!q.is_required,
-        }))
+        const normQs: Question[] = (qs || []).map((q: any) => {
+          let options: string[] = []
+          let correctAns = ''
+          if (q.question_type === 'QUIZ' && q.options && typeof q.options === 'object') {
+            const obj = q.options as any
+            options = Array.isArray(obj.choices) ? obj.choices : []
+            correctAns = typeof obj.correct === 'string' ? obj.correct : ''
+          } else {
+            options = Array.isArray(q.options) ? q.options : []
+          }
+          return {
+            id: q.id,
+            question_text: q.question_text || '',
+            question_type: q.question_type,
+            options,
+            correct_answer: correctAns,
+            is_required: !!q.is_required,
+          }
+        })
         setQuestions(normQs.length ? normQs : [{
           id: crypto.randomUUID(),
           question_text: '',
           question_type: 'SHORT_TEXT',
           options: [''],
+          correct_answer: '',
           is_required: true,
         }])
         setHasResponses((resp || []).length > 0)
@@ -102,6 +116,7 @@ export default function EditSurveyPage() {
         question_text: '',
         question_type: 'SHORT_TEXT',
         options: [''],
+        correct_answer: '',
         is_required: true,
       },
     ])
@@ -119,6 +134,10 @@ export default function EditSurveyPage() {
         const defaults = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
         const prev = Array.isArray(q.options) ? q.options : []
         next.options = prev.length >= 5 ? prev.slice(0, 5) : defaults
+        next.correct_answer = q.correct_answer || ''
+      }
+      if (updates.question_type && updates.question_type !== 'QUIZ' && q.question_type === 'QUIZ') {
+        next.correct_answer = ''
       }
       return next
     }))
@@ -172,7 +191,9 @@ export default function EditSurveyPage() {
         survey_id: id,
         question_text: q.question_text,
         question_type: q.question_type,
-        options: q.options.filter((opt) => opt.trim() !== ''),
+        options: q.question_type === 'QUIZ'
+          ? { choices: q.options.filter((opt) => opt.trim() !== ''), correct: q.correct_answer }
+          : q.options.filter((opt) => opt.trim() !== ''),
         order_index: index,
         is_required: q.is_required,
       }))
@@ -301,10 +322,12 @@ export default function EditSurveyPage() {
                     let resetOptions: string[] = []
                     if (newType === 'RATING') {
                       resetOptions = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
+                    } else if (newType === 'QUIZ') {
+                      resetOptions = ['', '', '']
                     } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
                       resetOptions = ['']
                     }
-                    updateQuestion(question.id, { question_type: newType, options: resetOptions })
+                    updateQuestion(question.id, { question_type: newType, options: resetOptions, correct_answer: newType === 'QUIZ' ? '' : '' })
                   }}
                   className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
                 >
@@ -313,6 +336,7 @@ export default function EditSurveyPage() {
                   <option value="SINGLE_CHOICE">Single Choice</option>
                   <option value="MULTIPLE_CHOICE">Multiple Choice</option>
                   <option value="RATING">Rating (1–5)</option>
+                  <option value="QUIZ">Quiz (Correct Answer)</option>
                 </select>
               </div>
 
@@ -370,6 +394,64 @@ export default function EditSurveyPage() {
                         />
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {question.question_type === 'QUIZ' && (
+                <div className="ml-4 mb-6">
+                  <label className="block text-sm font-medium text-gray-700">Answer Options</label>
+                  <div className="space-y-3 mt-2">
+                    {question.options.map((option, oIndex) => (
+                      <div key={oIndex} className="flex items-center gap-3">
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
+                          className="flex-1 px-2 py-1 border-b border-transparent focus:border-gray-200 outline-none text-gray-900 placeholder:text-gray-500 bg-white"
+                          placeholder={`Option ${oIndex + 1}`}
+                        />
+                        {question.options.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeOption(question.id, oIndex)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addOption(question.id)}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700 ml-7"
+                    >
+                      + Add Option
+                    </button>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Correct Answer <span className="ml-1 text-emerald-600 text-xs">✓ This will be auto-graded</span>
+                    </label>
+                    {question.options.filter((o) => o.trim() !== '').length > 0 ? (
+                      <select
+                        value={question.correct_answer}
+                        onChange={(e) => updateQuestion(question.id, { correct_answer: e.target.value })}
+                        className="mt-1 w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                      >
+                        <option value="" disabled>Select correct answer</option>
+                        {question.options
+                          .filter((o) => o.trim() !== '')
+                          .map((opt, idx) => (
+                            <option key={idx} value={opt}>{opt}</option>
+                          ))}
+                      </select>
+                    ) : (
+                      <div className="mt-1 text-xs text-gray-500">Add options above first</div>
+                    )}
                   </div>
                 </div>
               )}

@@ -72,7 +72,7 @@ export interface Database {
           id: string
           survey_id: string
           question_text: string
-          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING'
+          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ'
           options: Json | null
           order_index: number
           is_required: boolean
@@ -82,7 +82,7 @@ export interface Database {
           id?: string
           survey_id: string
           question_text: string
-          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING'
+          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ'
           options?: Json | null
           order_index: number
           is_required?: boolean
@@ -92,7 +92,7 @@ export interface Database {
           id?: string
           survey_id?: string
           question_text?: string
-          question_type?: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING'
+          question_type?: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ'
           options?: Json | null
           order_index?: number
           is_required?: boolean
@@ -122,6 +122,7 @@ export interface Database {
           response_id: string
           question_id: string
           answer_value: Json
+          is_correct: boolean | null
           created_at: string
         }
         Insert: {
@@ -129,6 +130,7 @@ export interface Database {
           response_id: string
           question_id: string
           answer_value: Json
+          is_correct?: boolean | null
           created_at?: string
         }
         Update: {
@@ -136,6 +138,7 @@ export interface Database {
           response_id?: string
           question_id?: string
           answer_value?: Json
+          is_correct?: boolean | null
           created_at?: string
         }
       }

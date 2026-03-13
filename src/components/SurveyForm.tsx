@@ -144,6 +144,24 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
             </div>
           )}
 
+          {question.question_type === 'QUIZ' && (
+            <div className="space-y-3">
+              {((question.options as any)?.choices || question.options || []).map((option: string) => (
+                <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="radio"
+                    name={question.id}
+                    value={option}
+                    required={question.is_required}
+                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                    className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
+                  />
+                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors">{option}</span>
+                </label>
+              ))}
+            </div>
+          )}
+
           {question.question_type === 'RATING' && (
             <div className="flex items-center justify-between gap-2">
               {[1, 2, 3, 4, 5].map((rating) => (
