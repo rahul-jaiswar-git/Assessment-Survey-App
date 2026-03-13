@@ -112,14 +112,30 @@ export default function EditSurveyPage() {
   }
 
   const updateQuestion = (qid: string, updates: Partial<Question>) => {
-    setQuestions(questions.map((q) => (q.id === qid ? { ...q, ...updates } : q)))
+    setQuestions(questions.map((q) => {
+      if (q.id !== qid) return q
+      const next = { ...q, ...updates }
+      if (updates.question_type === 'RATING') {
+        const defaults = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
+        const prev = Array.isArray(q.options) ? q.options : []
+        next.options = prev.length >= 5 ? prev.slice(0, 5) : defaults
+      }
+      return next
+    }))
   }
 
   const updateOption = (qid: string, index: number, value: string) => {
     setQuestions(
-      questions.map((q) =>
-        q.id === qid ? { ...q, options: q.options.map((opt, i) => (i === index ? value : opt)) } : q
-      )
+      questions.map((q) => {
+        if (q.id !== qid) return q
+        const opts = Array.isArray(q.options) ? [...q.options] : []
+        const needed = index + 1 - opts.length
+        if (needed > 0) {
+          opts.push(...Array(needed).fill(''))
+        }
+        opts[index] = value
+        return { ...q, options: opts }
+      })
     )
   }
 
@@ -287,7 +303,7 @@ export default function EditSurveyPage() {
                   <option value="LONG_TEXT">Long Text</option>
                   <option value="SINGLE_CHOICE">Single Choice</option>
                   <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                  <option value="RATING">Rating (1-10)</option>
+                  <option value="RATING">Rating (1–5)</option>
                 </select>
               </div>
 
@@ -321,6 +337,31 @@ export default function EditSurveyPage() {
                   >
                     + Add Option
                   </button>
+                </div>
+              )}
+
+              {question.question_type === 'RATING' && (
+                <div className="ml-4 mb-6">
+                  <label className="block text-sm font-medium text-gray-700">Rating Labels</label>
+                  <p className="text-xs text-gray-500">
+                    Customize the description for each rating value (1 = first label, 5 = last label)
+                  </p>
+                  <div className="space-y-2 mt-3">
+                    {[1, 2, 3, 4, 5].map((num, idx) => (
+                      <div key={num} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 text-sm font-bold flex items-center justify-center">
+                          {num}
+                        </div>
+                        <input
+                          type="text"
+                          value={question.options?.[idx] ?? ''}
+                          onChange={(e) => updateOption(question.id, idx, e.target.value)}
+                          className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none"
+                          placeholder={`Label for ${num}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 

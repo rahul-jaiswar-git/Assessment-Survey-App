@@ -123,6 +123,23 @@ export default async function ReviewSurveyPage({
                   ))}
                 </ul>
               )}
+              {q.question_type === 'RATING' && (
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  {[1, 2, 3, 4, 5].map((rating) => (
+                    <div
+                      key={rating}
+                      className="flex-1 py-3 px-1 rounded-lg border bg-white text-gray-600 flex flex-col items-center justify-center"
+                    >
+                      <span className="block text-sm font-bold">{rating}</span>
+                      {Array.isArray(q.options) && q.options?.[rating - 1] && (
+                        <span className="block text-xs text-current opacity-75 mt-0.5 leading-tight">
+                          {q.options[rating - 1]}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="mt-2 text-xs text-gray-500">
                 Required: {q.is_required ? 'Yes' : 'No'}
               </div>
