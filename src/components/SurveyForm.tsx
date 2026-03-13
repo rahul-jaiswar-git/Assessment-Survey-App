@@ -93,32 +93,61 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
           This survey is currently in draft. Public responses are disabled until it is published.
         </div>
       )}
+      {(() => {
+        const answerableQuestions = questions.filter((q: any) => q.question_type !== 'SECTION')
+        const totalAnswerable = answerableQuestions.length || 1
+        const answeredBefore = questions.slice(0, currentIndex).filter((q: any) => q.question_type !== 'SECTION').length
+        const isCurrentAnswerable = questions[currentIndex]?.question_type !== 'SECTION'
+        const displayNumber = Math.min(answeredBefore + (isCurrentAnswerable ? 1 : 0), totalAnswerable)
+        const percent = Math.round((displayNumber / totalAnswerable) * 100)
+        return (
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-gray-600">
-            Question {currentIndex + 1} of {questions.length}
+            Question {displayNumber} of {totalAnswerable}
           </span>
           <span className="text-sm text-gray-400">
-            {Math.round(((currentIndex + 1) / questions.length) * 100)}% complete
+            {percent}% complete
           </span>
         </div>
         <div className="w-full bg-gray-100 rounded-full h-2">
           <div
             className="bg-gray-900 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+            style={{ width: `${percent}%` }}
           />
         </div>
       </div>
+        )
+      })()}
 
       {(() => {
         const question = questions[currentIndex]
         if (!question) return null
+        const isSection = question.question_type === 'SECTION'
         return (
-          <div key={question.id} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 min-h-[280px]">
+          <div
+            key={question.id}
+            className={`bg-white p-8 rounded-2xl shadow-sm border border-gray-100 ${isSection ? 'min-h-[180px]' : 'min-h-[280px]'}`}
+          >
             <label className="block text-lg font-semibold text-gray-900 mb-4">
               {question.question_text}
               {question.is_required && <span className="text-red-500 ml-1">*</span>}
             </label>
+
+            {isSection && (
+              <div className="py-2">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-px flex-1 bg-blue-200" />
+                  <span className="text-xs font-bold text-blue-500 uppercase tracking-widest px-2">Section</span>
+                  <div className="h-px flex-1 bg-blue-200" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">{question.question_text}</h2>
+                {(question.options as any)?.description && (
+                  <p className="text-gray-500 text-sm">{(question.options as any).description}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-3">Click Next to continue to the questions in this section.</p>
+              </div>
+            )}
 
             {question.question_type === 'SHORT_TEXT' && (
               <input
@@ -239,7 +268,7 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
             type="button"
             onClick={() => {
               const question = questions[currentIndex]
-              if (question.is_required && !answers[question.id]) {
+              if (question.question_type !== 'SECTION' && question.is_required && !answers[question.id]) {
                 setError('Please answer this question before continuing.')
                 return
               }

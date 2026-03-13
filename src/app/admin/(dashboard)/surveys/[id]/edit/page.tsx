@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Trash2, Save } from 'lucide-react'
+import { Plus, Trash2, Save, Layers } from 'lucide-react'
 
-type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ'
+type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION'
 type Category = 'INDUSTRIAL' | 'PROFESSIONAL' | 'SKILL_ASSESSMENT'
 
 interface Question {
@@ -78,6 +78,9 @@ export default function EditSurveyPage() {
             const obj = q.options as any
             options = Array.isArray(obj.choices) ? obj.choices : []
             correctAns = typeof obj.correct === 'string' ? obj.correct : ''
+          } else if (q.question_type === 'SECTION' && q.options && typeof q.options === 'object') {
+            const obj = q.options as any
+            options = [typeof obj.description === 'string' ? obj.description : '']
           } else {
             options = Array.isArray(q.options) ? q.options : []
           }
@@ -87,7 +90,7 @@ export default function EditSurveyPage() {
             question_type: q.question_type,
             options,
             correct_answer: correctAns,
-            is_required: !!q.is_required,
+            is_required: q.question_type === 'SECTION' ? false : !!q.is_required,
           }
         })
         setQuestions(normQs.length ? normQs : [{
@@ -135,6 +138,10 @@ export default function EditSurveyPage() {
         const prev = Array.isArray(q.options) ? q.options : []
         next.options = prev.length >= 5 ? prev.slice(0, 5) : defaults
         next.correct_answer = q.correct_answer || ''
+      }
+      if (updates.question_type === 'SECTION') {
+        next.options = ['']
+        next.is_required = false
       }
       if (updates.question_type && updates.question_type !== 'QUIZ' && q.question_type === 'QUIZ') {
         next.correct_answer = ''
@@ -191,11 +198,13 @@ export default function EditSurveyPage() {
         survey_id: id,
         question_text: q.question_text,
         question_type: q.question_type,
-        options: q.question_type === 'QUIZ'
+        options: q.question_type === 'SECTION'
+          ? { description: q.options?.[0] || '' }
+          : q.question_type === 'QUIZ'
           ? { choices: q.options.filter((opt) => opt.trim() !== ''), correct: q.correct_answer }
           : q.options.filter((opt) => opt.trim() !== ''),
         order_index: index,
-        is_required: q.is_required,
+        is_required: q.question_type === 'SECTION' ? false : q.is_required,
       }))
       if (questionsToInsert.length > 0) {
         await supabase.from('questions').insert(questionsToInsert)
@@ -302,43 +311,75 @@ export default function EditSurveyPage() {
 
         <div className="space-y-4">
           {questions.map((question, qIndex) => (
-            <div key={question.id} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 relative group">
+            <div
+              key={question.id}
+              className={`p-8 rounded-2xl shadow-sm border relative group ${
+                question.question_type === 'SECTION'
+                  ? 'bg-blue-50 border-blue-200'
+                  : 'bg-white border-gray-100'
+              }`}
+            >
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-gray-200 rounded-l-2xl transition-colors" />
 
-              <div className="flex items-start justify-between gap-4 mb-6">
-                <div className="flex-1">
+              {question.question_type === 'SECTION' ? (
+                <div className="space-y-4">
+                  <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                    Section Divider
+                  </div>
                   <input
                     type="text"
                     value={question.question_text}
                     onChange={(e) => updateQuestion(question.id, { question_text: e.target.value })}
-                    className="w-full px-4 py-2 text-lg font-semibold border-b border-gray-100 focus:border-gray-900 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
-                    placeholder={`Question ${qIndex + 1}`}
+                    className="w-full px-4 py-2 text-2xl font-bold border-b border-blue-200 focus:border-blue-500 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-blue-50"
+                    placeholder="Section Title e.g. Discipline"
+                  />
+                  <textarea
+                    value={question.options?.[0] ?? ''}
+                    onChange={(e) => updateOption(question.id, 0, e.target.value)}
+                    className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                    placeholder="Optional description for this section"
+                    rows={2}
                   />
                 </div>
-                <select
-                  value={question.question_type}
-                  onChange={(e) => {
-                    const newType = e.target.value as QuestionType
-                    let resetOptions: string[] = []
-                    if (newType === 'RATING') {
-                      resetOptions = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
-                    } else if (newType === 'QUIZ') {
-                      resetOptions = ['', '', '']
-                    } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
-                      resetOptions = ['']
-                    }
-                    updateQuestion(question.id, { question_type: newType, options: resetOptions, correct_answer: newType === 'QUIZ' ? '' : '' })
-                  }}
-                  className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
-                >
-                  <option value="SHORT_TEXT">Short Text</option>
-                  <option value="LONG_TEXT">Long Text</option>
-                  <option value="SINGLE_CHOICE">Single Choice</option>
-                  <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                  <option value="RATING">Rating (1–5)</option>
-                  <option value="QUIZ">Quiz (Correct Answer)</option>
-                </select>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between gap-4 mb-6">
+                    <div className="flex-1">
+                      <input
+                        type="text"
+                        value={question.question_text}
+                        onChange={(e) => updateQuestion(question.id, { question_text: e.target.value })}
+                        className="w-full px-4 py-2 text-lg font-semibold border-b border-gray-100 focus:border-gray-900 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                        placeholder={`Question ${qIndex + 1}`}
+                      />
+                    </div>
+                    <select
+                      value={question.question_type}
+                      onChange={(e) => {
+                        const newType = e.target.value as QuestionType
+                        let resetOptions: string[] = []
+                        if (newType === 'RATING') {
+                          resetOptions = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
+                        } else if (newType === 'QUIZ') {
+                          resetOptions = ['', '', '']
+                        } else if (newType === 'SECTION') {
+                          resetOptions = ['']
+                        } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
+                          resetOptions = ['']
+                        }
+                        updateQuestion(question.id, { question_type: newType, options: resetOptions, correct_answer: newType === 'QUIZ' ? '' : '' , ...(newType === 'SECTION' ? { is_required: false } : {}) })
+                      }}
+                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
+                    >
+                      <option value="SHORT_TEXT">Short Text</option>
+                      <option value="LONG_TEXT">Long Text</option>
+                      <option value="SINGLE_CHOICE">Single Choice</option>
+                      <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                      <option value="RATING">Rating (1–5)</option>
+                      <option value="QUIZ">Quiz (Correct Answer)</option>
+                      <option value="SECTION">Section</option>
+                    </select>
+                  </div>
 
               {(question.question_type === 'SINGLE_CHOICE' || question.question_type === 'MULTIPLE_CHOICE') && (
                 <div className="space-y-3 ml-4 mb-6">
@@ -455,18 +496,22 @@ export default function EditSurveyPage() {
                   </div>
                 </div>
               )}
+                </>
+              )}
 
               <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-50">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Required</span>
-                  <button
-                    type="button"
-                    onClick={() => updateQuestion(question.id, { is_required: !question.is_required })}
-                    className={`w-10 h-5 rounded-full transition-colors relative ${question.is_required ? 'bg-gray-900' : 'bg-gray-200'}`}
-                  >
-                    <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${question.is_required ? 'left-6' : 'left-1'}`} />
-                  </button>
-                </div>
+                {question.question_type !== 'SECTION' && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Required</span>
+                    <button
+                      type="button"
+                      onClick={() => updateQuestion(question.id, { is_required: !question.is_required })}
+                      className={`w-10 h-5 rounded-full transition-colors relative ${question.is_required ? 'bg-gray-900' : 'bg-gray-200'}`}
+                    >
+                      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${question.is_required ? 'left-6' : 'left-1'}`} />
+                    </button>
+                  </div>
+                )}
                 <div className="h-4 w-px bg-gray-200" />
                 <button
                   type="button"
@@ -488,6 +533,14 @@ export default function EditSurveyPage() {
         >
           <Plus className="w-5 h-5" />
           Add Question
+        </button>
+        <button
+          type="button"
+          onClick={() => setQuestions([...questions, { id: crypto.randomUUID(), question_text: '', question_type: 'SECTION', options: [''], correct_answer: '', is_required: false }])}
+          className="w-full py-4 border-2 border-dashed border-blue-200 rounded-2xl text-blue-500 font-medium hover:border-blue-400 hover:text-blue-700 transition-all flex items-center justify-center gap-2"
+        >
+          <Layers className="w-5 h-5" />
+          Add Section
         </button>
 
         <div className="flex items-center justify-end gap-4 pt-8">

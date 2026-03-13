@@ -54,7 +54,8 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
   const questionStats = useMemo(() => {
     if (!selectedSurvey || !filteredResponses.length) return []
 
-    return selectedSurvey.questions.map((q: any) => {
+    const answerableQuestions = selectedSurvey.questions.filter((q: any) => q.question_type !== 'SECTION')
+    return answerableQuestions.map((q: any) => {
       const answers = filteredResponses.flatMap((r: any) =>
         r.answers.filter((a: any) => a.question_id === q.id)
       )
@@ -288,60 +289,97 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
             </div>
           )}
 
-          <div ref={analyticsRef} className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {questionStats.map((q: any) => (
-              <div key={q.id} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{q.question_text}</h3>
-                <p className="text-sm text-gray-500 mb-6">{q.totalResponses} responses</p>
-
-                <div className="h-64 w-full">
-                  {q.chartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      {q.question_type === 'RATING' ? (
-                        <BarChart data={q.chartData}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                          <XAxis dataKey="name" />
-                          <YAxis allowDecimals={false} />
-                          <Tooltip />
-                          <Bar dataKey="value" fill="#111827" radius={[4, 4, 0, 0]} />
-                        </BarChart>
-                      ) : (
-                        <PieChart>
-                          <Pie
-                            data={q.chartData}
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {q.chartData.map((_: any, index: number) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      )}
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center bg-gray-50 rounded-xl text-sm text-gray-600 p-4">
-                      <p className="text-center">
-                        This question collects open text responses.
-                        <br />
-                        Use the list below to review what people wrote.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTextQuestion(q)}
-                        className="mt-3 text-sm text-blue-600 font-medium hover:underline"
-                      >
-                        View all responses
-                      </button>
+          {(() => {
+            if (!selectedSurvey) return null
+            const sectionGroups = (() => {
+              const groups: { sectionTitle: string | null, questions: any[] }[] = []
+              let currentGroup: { sectionTitle: string | null, questions: any[] } = { sectionTitle: null, questions: [] }
+              for (const q of selectedSurvey.questions) {
+                if (q.question_type === 'SECTION') {
+                  if (currentGroup.questions.length > 0) groups.push(currentGroup)
+                  currentGroup = { sectionTitle: q.question_text, questions: [] }
+                } else {
+                  currentGroup.questions.push(q)
+                }
+              }
+              if (currentGroup.questions.length > 0) groups.push(currentGroup)
+              return groups
+            })()
+            return (
+              <div ref={analyticsRef} className="space-y-10">
+                {sectionGroups.map((group, groupIdx) => (
+                  <div key={groupIdx} className="space-y-6">
+                    {group.sectionTitle && (
+                      <div className="flex items-center gap-3">
+                        <div className="h-px flex-1 bg-gray-200" />
+                        <h2 className="text-lg font-bold text-gray-700 px-3 py-1 bg-gray-100 rounded-full">
+                          {group.sectionTitle}
+                        </h2>
+                        <div className="h-px flex-1 bg-gray-200" />
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      {group.questions.map((q: any) => {
+                        const stat = questionStats.find((s: any) => s.id === q.id)
+                        if (!stat) return null
+                        return (
+                          <div key={stat.id} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid">
+                            <h3 className="text-lg font-bold text-gray-900 mb-2">{stat.question_text}</h3>
+                            <p className="text-sm text-gray-500 mb-6">{stat.totalResponses} responses</p>
+                            <div className="h-64 w-full">
+                              {stat.chartData.length > 0 ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                  {stat.question_type === 'RATING' ? (
+                                    <BarChart data={stat.chartData}>
+                                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                      <XAxis dataKey="name" />
+                                      <YAxis allowDecimals={false} />
+                                      <Tooltip />
+                                      <Bar dataKey="value" fill="#111827" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                  ) : (
+                                    <PieChart>
+                                      <Pie
+                                        data={stat.chartData}
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                      >
+                                        {stat.chartData.map((_: any, index: number) => (
+                                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                      </Pie>
+                                      <Tooltip />
+                                    </PieChart>
+                                  )}
+                                </ResponsiveContainer>
+                              ) : (
+                                <div className="h-full flex flex-col items-center justify-center bg-gray-50 rounded-xl text-sm text-gray-600 p-4">
+                                  <p className="text-center">
+                                    This question collects open text responses.
+                                    <br />
+                                    Use the list below to review what people wrote.
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveTextQuestion(stat)}
+                                    className="mt-3 text-sm text-blue-600 font-medium hover:underline"
+                                  >
+                                    View all responses
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )
+          })()}
 
           {activeTextQuestion && (
             <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
