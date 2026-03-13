@@ -296,7 +296,16 @@ export default function EditSurveyPage() {
                 </div>
                 <select
                   value={question.question_type}
-                  onChange={(e) => updateQuestion(question.id, { question_type: e.target.value as QuestionType })}
+                  onChange={(e) => {
+                    const newType = e.target.value as QuestionType
+                    let resetOptions: string[] = []
+                    if (newType === 'RATING') {
+                      resetOptions = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
+                    } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
+                      resetOptions = ['']
+                    }
+                    updateQuestion(question.id, { question_type: newType, options: resetOptions })
+                  }}
                   className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
                 >
                   <option value="SHORT_TEXT">Short Text</option>
