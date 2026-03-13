@@ -146,18 +146,23 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
 
           {question.question_type === 'RATING' && (
             <div className="flex items-center justify-between gap-2">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+              {[1, 2, 3, 4, 5].map((rating) => (
                 <button
                   key={rating}
                   type="button"
                   onClick={() => handleAnswerChange(question.id, rating)}
-                  className={`flex-1 py-3 rounded-lg border text-sm font-bold transition-all ${
+                  className={`flex-1 py-3 px-1 rounded-lg border text-sm font-bold transition-all flex flex-col items-center justify-center ${
                     answers[question.id] === rating
                       ? 'bg-gray-900 border-gray-900 text-white'
                       : 'bg-white border-gray-200 text-gray-600 hover:border-gray-900 hover:text-gray-900'
                   }`}
                 >
-                  {rating}
+                  <span className="block text-sm font-bold">{rating}</span>
+                  {question.options?.[rating - 1] && (
+                    <span className="block text-xs text-current opacity-75 mt-0.5 leading-tight">
+                      {question.options?.[rating - 1]}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
