@@ -30,15 +30,35 @@ export async function POST(
 
     const supabase = createSRClient(url, serviceKey)
 
+    // Fetch the survey to check publish status and schedule windows
     const { data: survey } = await supabase
       .from('surveys')
-      .select('status')
+      .select('status, starts_at, ends_at')
       .eq('id', surveyId)
       .single()
 
-    if (!survey || survey.status !== 'PUBLISHED') {
+    if (!survey) {
+      return NextResponse.json({ error: 'Survey not found.' }, { status: 404 })
+    }
+
+    if (survey.status !== 'PUBLISHED') {
       return NextResponse.json(
-        { error: 'Survey is not published. Submissions are disabled.' },
+        { error: 'This survey is no longer accepting responses.' },
+        { status: 403 }
+      )
+    }
+
+    const now = new Date()
+    if (survey.ends_at && new Date(survey.ends_at) < now) {
+      return NextResponse.json(
+        { error: 'This survey has closed. Your response could not be submitted.' },
+        { status: 403 }
+      )
+    }
+
+    if (survey.starts_at && new Date(survey.starts_at) > now) {
+      return NextResponse.json(
+        { error: 'This survey is not yet open.' },
         { status: 403 }
       )
     }
