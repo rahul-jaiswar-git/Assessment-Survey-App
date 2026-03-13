@@ -31,7 +31,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
       <button
         type="button"
         onClick={() => router.push(`/admin/surveys/${id}/review`)}
-        className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 transition-colors"
+        className="px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95 select-none"
       >
         <Eye className="w-4 h-4" />
         Review
@@ -40,7 +40,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
         type="button"
         onClick={togglePublish}
         disabled={isPending}
-        className={`px-3 py-1.5 text-sm font-medium rounded-lg border flex items-center gap-1.5 transition-colors disabled:opacity-50 ${
+        className={`px-3 py-1.5 text-sm font-medium rounded-lg border flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer active:scale-95 select-none ${
           status === 'PUBLISHED'
             ? 'border-orange-200 text-orange-600 hover:bg-orange-50'
             : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
@@ -61,7 +61,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
       <button
         type="button"
         onClick={copyLink}
-        className={`px-3 py-1.5 text-sm font-medium rounded-lg border flex items-center gap-1.5 transition-colors ${
+        className={`px-3 py-1.5 text-sm font-medium rounded-lg border flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95 select-none ${
           copied ? 'border-green-200 text-green-600' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
         }`}
       >
