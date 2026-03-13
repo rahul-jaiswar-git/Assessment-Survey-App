@@ -7,6 +7,7 @@ import { Eye, Globe, Copy, Check } from 'lucide-react'
 export default function SurveyActions({ id, status }: { id: string; status: string }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [isDuplicating, startDuplicateTransition] = useTransition()
   const [copied, setCopied] = useState(false)
 
   const togglePublish = () => {
@@ -26,6 +27,15 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const duplicateSurvey = () => {
+    startDuplicateTransition(async () => {
+      const form = new FormData()
+      form.append('survey_id', id)
+      await fetch('/admin/surveys/duplicate', { method: 'POST', body: form })
+      router.refresh()
+    })
+  }
+
   return (
     <div className="flex items-center gap-2">
       <button
@@ -35,6 +45,15 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
       >
         <Eye className="w-4 h-4" />
         Review
+      </button>
+      <button
+        type="button"
+        onClick={duplicateSurvey}
+        disabled={isDuplicating}
+        className="px-3 py-1.5 text-sm font-medium rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex items-center gap-1.5 transition-colors cursor-pointer active:scale-95 select-none disabled:opacity-50"
+      >
+        <Copy className="w-4 h-4" />
+        {isDuplicating ? 'Duplicating...' : 'Duplicate'}
       </button>
       <button
         type="button"

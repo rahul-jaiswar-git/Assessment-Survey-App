@@ -72,6 +72,29 @@ export async function POST(
       }
     }
 
+    // Auto-grade QUIZ questions by comparing submitted answer to correct answer
+    const { data: quizQuestions } = await supabase
+      .from('questions')
+      .select('id, question_type, options')
+      .eq('survey_id', surveyId)
+      .eq('question_type', 'QUIZ')
+
+    if (quizQuestions && quizQuestions.length > 0) {
+      for (const q of quizQuestions as any[]) {
+        const userAnswer = (answers as Record<string, any>)[q.id]
+        const correctAnswer = (q.options as any)?.correct
+        if (userAnswer !== undefined && correctAnswer !== undefined) {
+          const isCorrect =
+            String(userAnswer).trim() === String(correctAnswer).trim()
+          await supabase
+            .from('answers')
+            .update({ is_correct: isCorrect })
+            .eq('response_id', response.id)
+            .eq('question_id', q.id)
+        }
+      }
+    }
+
     return NextResponse.json({ success: true })
   } catch (err: any) {
     console.error('Survey submit error', err)
