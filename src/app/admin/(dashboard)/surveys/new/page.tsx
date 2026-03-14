@@ -25,8 +25,15 @@ export default function NewSurveyPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<Category>('INDUSTRIAL')
-  const [startsAt, setStartsAt] = useState('')
-  const [endsAt, setEndsAt] = useState('')
+  const [startDate, setStartDate] = useState('')
+  const [startHour, setStartHour] = useState('08')
+  const [startMinute, setStartMinute] = useState('00')
+  const [startAmPm, setStartAmPm] = useState<'AM' | 'PM'>('AM')
+
+  const [endDate, setEndDate] = useState('')
+  const [endHour, setEndHour] = useState('05')
+  const [endMinute, setEndMinute] = useState('00')
+  const [endAmPm, setEndAmPm] = useState<'AM' | 'PM'>('PM')
   const [questions, setQuestions] = useState<Question[]>([
     {
       id: crypto.randomUUID(),
@@ -38,6 +45,38 @@ export default function NewSurveyPage() {
     },
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const toLocalInputValue = (isoString: string): { date: string, time: string, ampm: 'AM' | 'PM', hour: string, minute: string } => {
+    if (!isoString) return { date: '', time: '', ampm: 'AM', hour: '', minute: '' }
+    const d = new Date(isoString)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const hours24 = d.getHours()
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    const ampm = hours24 >= 12 ? 'PM' : 'AM'
+    const hours12 = hours24 % 12 || 12
+    return {
+      date: `${year}-${month}-${day}`,
+      time: `${String(hours12).padStart(2, '0')}:${minutes}`,
+      ampm,
+      hour: String(hours12).padStart(2, '0'),
+      minute: minutes,
+    }
+  }
+
+  const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' | 'PM'): string | null => {
+    if (!date) return null
+    let h = parseInt(hour || '12', 10)
+    const m = parseInt(minute || '0', 10)
+    if (ampm === 'AM') {
+      if (h === 12) h = 0
+    } else {
+      if (h !== 12) h += 12
+    }
+    const d = new Date(`${date}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`)
+    return isNaN(d.getTime()) ? null : d.toISOString()
+  }
 
   const addQuestion = () => {
     setQuestions([
@@ -139,8 +178,8 @@ export default function NewSurveyPage() {
           description,
           category,
           status,
-          starts_at: startsAt ? new Date(startsAt).toISOString() : null,
-          ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+          starts_at: buildISOString(startDate, startHour, startMinute, startAmPm),
+          ends_at: buildISOString(endDate, endHour, endMinute, endAmPm),
           created_by: user?.id,
         })
         .select()
@@ -235,25 +274,83 @@ export default function NewSurveyPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  Start Date &amp; Time
+                  Start Date & Time
                 </label>
-                <input
-                  type="datetime-local"
-                  value={startsAt}
-                  onChange={(e) => setStartsAt(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 bg-white outline-none"
-                />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none"
+                  />
+                  <select
+                    value={startHour}
+                    onChange={(e) => setStartHour(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                  >
+                    {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <span className="text-gray-500 font-bold">:</span>
+                  <select
+                    value={startMinute}
+                    onChange={(e) => setStartMinute(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                  >
+                    {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={startAmPm}
+                    onChange={(e) => setStartAmPm(e.target.value as 'AM' | 'PM')}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">
-                  End Date &amp; Time
+                  End Date & Time
                 </label>
-                <input
-                  type="datetime-local"
-                  value={endsAt}
-                  onChange={(e) => setEndsAt(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 text-gray-900 bg-white outline-none"
-                />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none"
+                  />
+                  <select
+                    value={endHour}
+                    onChange={(e) => setEndHour(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                  >
+                    {['01','02','03','04','05','06','07','08','09','10','11','12'].map(h => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <span className="text-gray-500 font-bold">:</span>
+                  <select
+                    value={endMinute}
+                    onChange={(e) => setEndMinute(e.target.value)}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                  >
+                    {['00','05','10','15','20','25','30','35','40','45','50','55'].map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={endAmPm}
+                    onChange={(e) => setEndAmPm(e.target.value as 'AM' | 'PM')}
+                    className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
