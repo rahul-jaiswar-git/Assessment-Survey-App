@@ -140,7 +140,7 @@ export default async function PublicSurveyPage({
           </div>
         )}
 
-        <SurveyForm surveyId={survey.id} questions={sortedQuestions} status={survey.status} />
+        <SurveyForm surveyId={survey.id} questions={sortedQuestions} status={survey.status} allowPrevious={survey.allow_previous ?? true} />
       </div>
     </div>
   )
