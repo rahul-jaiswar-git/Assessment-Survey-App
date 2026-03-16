@@ -15,8 +15,9 @@ import {
   Cell,
 } from 'recharts'
 import { FileSpreadsheet, FileText as FilePdf } from 'lucide-react'
-import Papa from 'papaparse'
-import { useReactToPrint } from 'react-to-print'
+import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 
@@ -31,7 +32,6 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
   const [fromDate, setFromDate] = useState<string>('')
   const [toDate, setToDate] = useState<string>('')
   const [activeTextQuestion, setActiveTextQuestion] = useState<any | null>(null)
-  const analyticsRef = useRef<HTMLDivElement | null>(null)
 
   const filteredResponses = useMemo(() => {
     if (!responses.length) return []
@@ -122,64 +122,282 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
     }
   }, [selectedSurvey, filteredResponses])
 
-  const exportToCSV = () => {
-    if (!selectedSurvey || !filteredResponses.length) return
-
-    const csvData = filteredResponses.map((r: any) => {
-      const row: any = { 'Submitted At': new Date(r.submitted_at).toLocaleString() }
-      selectedSurvey.questions.forEach((q: any) => {
-        const answer = r.answers.find((a: any) => a.question_id === q.id)
-        row[q.question_text] = Array.isArray(answer?.answer_value)
-          ? answer.answer_value.join(', ')
-          : answer?.answer_value || ''
-      })
-      return row
-    })
-
-    const csv = Papa.unparse(csvData)
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', `${selectedSurvey.title}_responses.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
-
   const exportToExcel = () => {
     if (!selectedSurvey || !filteredResponses.length) return
 
-    const csvData = filteredResponses.map((r: any) => {
-      const row: any = { 'Submitted At': new Date(r.submitted_at).toLocaleString() }
-      selectedSurvey.questions.forEach((q: any) => {
+    const wb = XLSX.utils.book_new()
+
+    // ── SHEET 1: Summary ──────────────────────────────────────────
+    const summaryRows = [
+      ['SURVEY REPORT'],
+      [],
+      ['Survey Title', selectedSurvey.title],
+      ['Category', selectedSurvey.category.replace(/_/g, ' ')],
+      ['Status', selectedSurvey.status],
+      ['Total Responses', filteredResponses.length],
+      ['Total Questions', selectedSurvey.questions.filter((q: any) => q.question_type !== 'SECTION').length],
+      ['Report Generated', new Date().toLocaleString()],
+      [],
+      ['Start Date', selectedSurvey.starts_at ? new Date(selectedSurvey.starts_at).toLocaleString() : 'No restriction'],
+      ['End Date', selectedSurvey.ends_at ? new Date(selectedSurvey.ends_at).toLocaleString() : 'No restriction'],
+    ]
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows)
+    wsSummary['!cols'] = [{ wch: 25 }, { wch: 50 }]
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary')
+
+    // ── SHEET 2: All Responses (one row per respondent) ───────────
+    const answerableQuestions = selectedSurvey.questions.filter(
+      (q: any) => q.question_type !== 'SECTION'
+    )
+    const headerRow = [
+      '#',
+      'Submitted At',
+      ...answerableQuestions.map((q: any, i: number) => `Q${i + 1}. ${q.question_text}`)
+    ]
+    const dataRows = filteredResponses.map((r: any, idx: number) => {
+      const row: any[] = [
+        idx + 1,
+        new Date(r.submitted_at).toLocaleString(),
+      ]
+      answerableQuestions.forEach((q: any) => {
         const answer = r.answers.find((a: any) => a.question_id === q.id)
-        row[q.question_text] = Array.isArray(answer?.answer_value)
-          ? answer.answer_value.join(', ')
-          : answer?.answer_value || ''
+        const val = answer?.answer_value
+        if (val === null || val === undefined) {
+          row.push('')
+        } else if (Array.isArray(val)) {
+          row.push(val.join(', '))
+        } else {
+          row.push(String(val))
+        }
       })
       return row
     })
+    const wsResponses = XLSX.utils.aoa_to_sheet([headerRow, ...dataRows])
+    // Set column widths
+    wsResponses['!cols'] = [
+      { wch: 5 },
+      { wch: 22 },
+      ...answerableQuestions.map(() => ({ wch: 35 }))
+    ]
+    XLSX.utils.book_append_sheet(wb, wsResponses, 'All Responses')
 
-    const csv = Papa.unparse(csvData)
-    const blob = new Blob([csv], {
-      type: 'application/vnd.ms-excel;charset=utf-8;',
+    // ── SHEET 3: Question Stats ────────────────────────────────────
+    const statsRows: any[][] = [
+      ['QUESTION-WISE STATISTICS'],
+      [],
+    ]
+    answerableQuestions.forEach((q: any, idx: number) => {
+      statsRows.push([`Q${idx + 1}. ${q.question_text}`])
+      statsRows.push(['Type', q.question_type.replace(/_/g, ' ')])
+
+      const answers = filteredResponses.flatMap((r: any) =>
+        r.answers.filter((a: any) => a.question_id === q.id)
+      )
+      statsRows.push(['Total Answers', answers.length])
+
+      if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE' || q.question_type === 'QUIZ') {
+        const counts: Record<string, number> = {}
+        answers.forEach((a: any) => {
+          const val = a.answer_value
+          if (Array.isArray(val)) {
+            val.forEach((v: string) => (counts[v] = (counts[v] || 0) + 1))
+          } else {
+            counts[String(val)] = (counts[String(val)] || 0) + 1
+          }
+        })
+        statsRows.push(['Option', 'Count', 'Percentage'])
+        Object.entries(counts).forEach(([option, count]) => {
+          const pct = answers.length > 0 ? ((count / answers.length) * 100).toFixed(1) + '%' : '0%'
+          statsRows.push([option, count, pct])
+        })
+      } else if (q.question_type === 'RATING') {
+        const counts: Record<number, number> = {}
+        for (let i = 1; i <= 5; i++) counts[i] = 0
+        answers.forEach((a: any) => {
+          const rating = Number(a.answer_value)
+          if (!isNaN(rating) && rating >= 1 && rating <= 5) counts[rating]++
+        })
+        const total = answers.length
+        const avg = total > 0
+          ? (answers.reduce((sum: number, a: any) => sum + Number(a.answer_value), 0) / total).toFixed(2)
+          : '0'
+        statsRows.push(['Rating', 'Count', 'Percentage'])
+        for (let i = 1; i <= 5; i++) {
+          const pct = total > 0 ? ((counts[i] / total) * 100).toFixed(1) + '%' : '0%'
+          statsRows.push([`Rating ${i}`, counts[i], pct])
+        }
+        statsRows.push(['Average Rating', avg, ''])
+      } else {
+        // SHORT_TEXT / LONG_TEXT
+        statsRows.push(['Response #', 'Answer'])
+        answers.forEach((a: any, i: number) => {
+          const val = a.answer_value
+          statsRows.push([
+            i + 1,
+            typeof val === 'string' ? val : Array.isArray(val) ? val.join(', ') : String(val ?? '')
+          ])
+        })
+      }
+      statsRows.push([]) // blank row between questions
     })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    link.setAttribute('href', url)
-    link.setAttribute('download', `${selectedSurvey.title}_responses.xls`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+
+    const wsStats = XLSX.utils.aoa_to_sheet(statsRows)
+    wsStats['!cols'] = [{ wch: 45 }, { wch: 15 }, { wch: 15 }]
+    XLSX.utils.book_append_sheet(wb, wsStats, 'Question Stats')
+
+    // ── Download ──────────────────────────────────────────────────
+    const safeTitle = selectedSurvey.title.replace(/[^a-z0-9]/gi, '_').substring(0, 40)
+    XLSX.writeFile(wb, `${safeTitle}_report.xlsx`)
   }
 
-  const handlePrint = useReactToPrint({
-    contentRef: analyticsRef,
-    documentTitle: selectedSurvey ? `${selectedSurvey.title}_analytics` : 'survey_analytics',
-  })
+  const exportToPDF = () => {
+    if (!selectedSurvey || !filteredResponses.length) return
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    const pageW = doc.internal.pageSize.getWidth()
+    let y = 20
+
+    // ── Header ────────────────────────────────────────────────────
+    doc.setFillColor(17, 24, 39) // gray-900
+    doc.rect(0, 0, pageW, 14, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.text('SURVEY ANALYTICS REPORT', pageW / 2, 9, { align: 'center' })
+
+    // ── Survey title ──────────────────────────────────────────────
+    doc.setTextColor(17, 24, 39)
+    doc.setFontSize(16)
+    doc.setFont('helvetica', 'bold')
+    const titleLines = doc.splitTextToSize(selectedSurvey.title, pageW - 30)
+    doc.text(titleLines, 15, y + 5)
+    y += titleLines.length * 8 + 8
+
+    // ── Summary table ─────────────────────────────────────────────
+    autoTable(doc, {
+      startY: y,
+      head: [['Field', 'Value']],
+      body: [
+        ['Category', selectedSurvey.category.replace(/_/g, ' ')],
+        ['Status', selectedSurvey.status],
+        ['Total Responses', String(filteredResponses.length)],
+        ['Total Questions', String(selectedSurvey.questions.filter((q: any) => q.question_type !== 'SECTION').length)],
+        ['Report Generated', new Date().toLocaleString()],
+        ['Start Date', selectedSurvey.starts_at ? new Date(selectedSurvey.starts_at).toLocaleString() : 'No restriction'],
+        ['End Date', selectedSurvey.ends_at ? new Date(selectedSurvey.ends_at).toLocaleString() : 'No restriction'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [17, 24, 39], textColor: 255, fontStyle: 'bold' },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 }, 1: { cellWidth: 'auto' } },
+      margin: { left: 15, right: 15 },
+    })
+
+    y = (doc as any).lastAutoTable.finalY + 12
+
+    // ── Per-question stats ────────────────────────────────────────
+    const answerableQuestions = selectedSurvey.questions.filter(
+      (q: any) => q.question_type !== 'SECTION'
+    )
+
+    answerableQuestions.forEach((q: any, idx: number) => {
+      if (y > 240) { doc.addPage(); y = 20 }
+
+      doc.setFontSize(11)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(17, 24, 39)
+      const qLines = doc.splitTextToSize(`Q${idx + 1}. ${q.question_text}`, pageW - 30)
+      doc.text(qLines, 15, y)
+      y += qLines.length * 6 + 2
+
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(107, 114, 128)
+      doc.text(`Type: ${q.question_type.replace(/_/g, ' ')}`, 15, y)
+      y += 6
+
+      const answers = filteredResponses.flatMap((r: any) =>
+        r.answers.filter((a: any) => a.question_id === q.id)
+      )
+
+      if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE' || q.question_type === 'QUIZ') {
+        const counts: Record<string, number> = {}
+        answers.forEach((a: any) => {
+          const val = a.answer_value
+          if (Array.isArray(val)) val.forEach((v: string) => (counts[v] = (counts[v] || 0) + 1))
+          else counts[String(val)] = (counts[String(val)] || 0) + 1
+        })
+        autoTable(doc, {
+          startY: y,
+          head: [['Option', 'Count', '%']],
+          body: Object.entries(counts).map(([opt, cnt]) => [
+            opt,
+            String(cnt),
+            answers.length > 0 ? ((cnt / answers.length) * 100).toFixed(1) + '%' : '0%',
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [55, 65, 81] },
+          margin: { left: 15, right: 15 },
+        })
+        y = (doc as any).lastAutoTable.finalY + 10
+      } else if (q.question_type === 'RATING') {
+        const counts: Record<number, number> = {}
+        for (let i = 1; i <= 5; i++) counts[i] = 0
+        answers.forEach((a: any) => {
+          const r = Number(a.answer_value)
+          if (!isNaN(r) && r >= 1 && r <= 5) counts[r]++
+        })
+        const total = answers.length
+        const avg = total > 0
+          ? (answers.reduce((s: number, a: any) => s + Number(a.answer_value), 0) / total).toFixed(2)
+          : '0'
+        autoTable(doc, {
+          startY: y,
+          head: [['Rating', 'Count', '%']],
+          body: [
+            ...([1,2,3,4,5].map(i => [
+              `Rating ${i}`,
+              String(counts[i]),
+              total > 0 ? ((counts[i] / total) * 100).toFixed(1) + '%' : '0%',
+            ])),
+            ['Average', avg, ''],
+          ],
+          theme: 'striped',
+          headStyles: { fillColor: [55, 65, 81] },
+          margin: { left: 15, right: 15 },
+        })
+        y = (doc as any).lastAutoTable.finalY + 10
+      } else {
+        // Text responses
+        const textAnswers = answers.map((a: any) =>
+          typeof a.answer_value === 'string' ? a.answer_value : String(a.answer_value ?? '')
+        ).filter((v: string) => v.trim())
+        if (textAnswers.length > 0) {
+          autoTable(doc, {
+            startY: y,
+            head: [['#', 'Response']],
+            body: textAnswers.map((ans: string, i: number) => [String(i + 1), ans]),
+            theme: 'striped',
+            headStyles: { fillColor: [55, 65, 81] },
+            columnStyles: { 0: { cellWidth: 12 }, 1: { cellWidth: 'auto' } },
+            margin: { left: 15, right: 15 },
+          })
+          y = (doc as any).lastAutoTable.finalY + 10
+        }
+      }
+    })
+
+    // ── Footer with page numbers ──────────────────────────────────
+    const pageCount = doc.getNumberOfPages()
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i)
+      doc.setFontSize(8)
+      doc.setTextColor(156, 163, 175)
+      doc.text(`Page ${i} of ${pageCount}`, pageW / 2, 290, { align: 'center' })
+    }
+
+    const safeTitle = selectedSurvey.title.replace(/[^a-z0-9]/gi, '_').substring(0, 40)
+    doc.save(`${safeTitle}_report.pdf`)
+  }
 
   return (
     <div className="space-y-8">
@@ -244,7 +462,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
 
             <button
               type="button"
-              onClick={handlePrint}
+              onClick={exportToPDF}
               className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
             >
               <FilePdf className="w-4 h-4" />
@@ -306,7 +524,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
               return groups
             })()
             return (
-              <div ref={analyticsRef} className="space-y-10">
+              <div className="space-y-10">
                 {sectionGroups.map((group, groupIdx) => (
                   <div key={groupIdx} className="space-y-6">
                     {group.sectionTitle && (
