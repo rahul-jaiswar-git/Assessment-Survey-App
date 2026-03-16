@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Search, Plus } from 'lucide-react'
 import SurveyActions from '@/components/SurveyActions'
+import { formatDateTime } from '@/lib/formatDate'
 
 export default function SurveysClient({ surveys }: { surveys: any[] }) {
   const [search, setSearch] = useState('')
@@ -183,30 +184,10 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {survey.starts_at ? (
-                          new Date(survey.starts_at).toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
+                        {survey.starts_at ? formatDateTime(survey.starts_at) : <span className="text-gray-400">—</span>}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {survey.ends_at ? (
-                          new Date(survey.ends_at).toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        ) : (
-                          <span className="text-gray-400">—</span>
-                        )}
+                        {survey.ends_at ? formatDateTime(survey.ends_at) : <span className="text-gray-400">—</span>}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {survey.responses?.[0]?.count || 0}
