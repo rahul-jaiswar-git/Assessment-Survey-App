@@ -42,6 +42,7 @@ export interface Database {
           starts_at: string | null
           ends_at: string | null
           allow_previous: boolean
+          time_limit_minutes: number
         }
         Insert: {
           id?: string
@@ -55,6 +56,7 @@ export interface Database {
           starts_at?: string | null
           ends_at?: string | null
           allow_previous?: boolean
+          time_limit_minutes?: number
         }
         Update: {
           id?: string
@@ -107,16 +109,22 @@ export interface Database {
           id: string
           survey_id: string
           submitted_at: string
+          started_at: string
+          time_taken_seconds: number | null
         }
         Insert: {
           id?: string
           survey_id: string
           submitted_at?: string
+          started_at?: string
+          time_taken_seconds?: number | null
         }
         Update: {
           id?: string
           survey_id?: string
           submitted_at?: string
+          started_at?: string
+          time_taken_seconds?: number | null
         }
       }
       answers: {

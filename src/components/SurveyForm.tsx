@@ -1,21 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-import { CheckCircle, AlertCircle, Send } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { CheckCircle, AlertCircle, Send, Clock } from 'lucide-react'
 
 interface SurveyFormProps {
   surveyId: string
   questions: any[]
   status?: 'DRAFT' | 'PUBLISHED'
   allowPrevious?: boolean
+  timeLimitMinutes?: number
 }
 
-export default function SurveyForm({ surveyId, questions, status, allowPrevious = true }: SurveyFormProps) {
+export default function SurveyForm({ surveyId, questions, status, allowPrevious = true, timeLimitMinutes }: SurveyFormProps) {
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
+  const [timerStarted, setTimerStarted] = useState(false)
 
   const handleAnswerChange = (questionId: string, value: any) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }))
@@ -36,12 +39,16 @@ export default function SurveyForm({ surveyId, questions, status, allowPrevious 
     setError(null)
 
     try {
+      const timeTakenSeconds = timerStarted && timeRemaining !== null 
+        ? (timeLimitMinutes || 0) * 60 - timeRemaining 
+        : null
+
       const res = await fetch(`/survey/${surveyId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify({ answers, timeTakenSeconds }),
       })
 
       const data = await res.json().catch(() => ({}))
@@ -80,6 +87,34 @@ export default function SurveyForm({ surveyId, questions, status, allowPrevious 
 
   const isDraft = status && status !== 'PUBLISHED'
 
+  // Timer logic
+  useEffect(() => {
+    if (timeLimitMinutes && timeLimitMinutes > 0 && !timerStarted) {
+      const startTime = Date.now()
+      setTimerStarted(true)
+      setTimeRemaining(timeLimitMinutes * 60) // Convert to seconds
+
+      const interval = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev === null || prev <= 0) {
+            clearInterval(interval)
+            setError('Time limit exceeded. Please submit your responses.')
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(interval)
+    }
+  }, [timeLimitMinutes, timerStarted])
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -107,9 +142,19 @@ export default function SurveyForm({ surveyId, questions, status, allowPrevious 
           <span className="text-sm font-medium text-gray-600">
             Question {displayNumber} of {totalAnswerable}
           </span>
-          <span className="text-sm text-gray-400">
-            {percent}% complete
-          </span>
+          <div className="flex items-center gap-4">
+            {timeLimitMinutes && timeLimitMinutes > 0 && timeRemaining !== null && (
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="w-4 h-4 text-gray-500" />
+                <span className={`font-medium ${timeRemaining <= 60 ? 'text-red-600' : timeRemaining <= 300 ? 'text-yellow-600' : 'text-gray-600'}`}>
+                  {formatTime(timeRemaining)}
+                </span>
+              </div>
+            )}
+            <span className="text-sm text-gray-400">
+              {percent}% complete
+            </span>
+          </div>
         </div>
         <div className="w-full bg-gray-100 rounded-full h-2">
           <div

@@ -8,7 +8,7 @@ export async function POST(
   try {
     const { id: surveyId } = await params
     const body = await req.json().catch(() => ({}))
-    const { answers } = body as { answers?: Record<string, any> }
+    const { answers, timeTakenSeconds } = body as { answers?: Record<string, any>, timeTakenSeconds?: number }
 
     if (!surveyId || !answers || typeof answers !== 'object') {
       return NextResponse.json(
@@ -66,7 +66,11 @@ export async function POST(
     // 1. Create response record
     const { data: response, error: responseError } = await supabase
       .from('responses')
-      .insert({ survey_id: surveyId })
+      .insert({ 
+        survey_id: surveyId,
+        started_at: new Date().toISOString(),
+        time_taken_seconds: timeTakenSeconds || null
+      })
       .select()
       .single()
 

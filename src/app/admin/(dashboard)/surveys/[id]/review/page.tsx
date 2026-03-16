@@ -94,20 +94,20 @@ export default async function ReviewSurveyPage({
               {survey.category.replace('_', ' ')}
             </span>
             <span className="text-gray-400">•</span>
-            <span className="text-gray-600">
-              Start: {formatDateTime(survey.starts_at)}
-            </span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-600">
-              End: {formatDateTime(survey.ends_at)}
-            </span>
-            <span className="text-gray-400">•</span>
-            <span>
+            <span className="text-gray-900 font-medium">
               Previous Button: {survey.allow_previous ? (
                 <span className="text-emerald-600 font-medium">Enabled</span>
               ) : (
                 <span className="text-red-500 font-medium">Disabled</span>
               )}
+            </span>
+            <span className="text-gray-400">•</span>
+            <span className="text-gray-900 font-medium">
+              Time Limit:{' '}
+              {survey.time_limit_minutes > 0
+                ? `${survey.time_limit_minutes} minutes`
+                : <span className="text-gray-500">No limit</span>
+              }
             </span>
           </div>
         </div>
