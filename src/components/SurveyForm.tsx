@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { CheckCircle, AlertCircle, Send, Clock } from 'lucide-react'
 
 interface SurveyFormProps {
@@ -17,8 +17,9 @@ export default function SurveyForm({ surveyId, questions, status, allowPrevious 
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [timeRemaining, setTimeRemaining] = useState<number | null>(null)
-  const [timerStarted, setTimerStarted] = useState(false)
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null)
+  const [isTimeUp, setIsTimeUp] = useState(false)
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleAnswerChange = (questionId: string, value: any) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }))
@@ -39,8 +40,8 @@ export default function SurveyForm({ surveyId, questions, status, allowPrevious 
     setError(null)
 
     try {
-      const timeTakenSeconds = timerStarted && timeRemaining !== null 
-        ? (timeLimitMinutes || 0) * 60 - timeRemaining 
+      const timeTakenSeconds = secondsLeft !== null && timeLimitMinutes && timeLimitMinutes > 0
+        ? timeLimitMinutes * 60 - secondsLeft
         : null
 
       const res = await fetch(`/survey/${surveyId}/submit`, {
@@ -89,27 +90,34 @@ export default function SurveyForm({ surveyId, questions, status, allowPrevious 
 
   // Timer logic
   useEffect(() => {
-    if (timeLimitMinutes && timeLimitMinutes > 0 && !timerStarted) {
-      const startTime = Date.now()
-      setTimerStarted(true)
-      setTimeRemaining(timeLimitMinutes * 60) // Convert to seconds
+    if (!timeLimitMinutes || timeLimitMinutes <= 0) return
 
-      const interval = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev === null || prev <= 0) {
-            clearInterval(interval)
-            setError('Time limit exceeded. Please submit your responses.')
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
+    const totalSeconds = timeLimitMinutes * 60
+    setSecondsLeft(totalSeconds)
 
-      return () => clearInterval(interval)
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev === null) return null
+        if (prev <= 1) {
+          clearInterval(interval)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    timerRef.current = interval
+
+    return () => clearInterval(interval)
+  }, [timeLimitMinutes])
+
+  useEffect(() => {
+    if (secondsLeft === 0 && timeLimitMinutes && timeLimitMinutes > 0) {
+      setIsTimeUp(true)
     }
-  }, [timeLimitMinutes, timerStarted])
+  }, [secondsLeft, timeLimitMinutes])
 
-  const formatTime = (seconds: number) => {
+  const formatTimeLeft = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
@@ -143,12 +151,22 @@ export default function SurveyForm({ surveyId, questions, status, allowPrevious 
             Question {displayNumber} of {totalAnswerable}
           </span>
           <div className="flex items-center gap-4">
-            {timeLimitMinutes && timeLimitMinutes > 0 && timeRemaining !== null && (
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className={`font-medium ${timeRemaining <= 60 ? 'text-red-600' : timeRemaining <= 300 ? 'text-yellow-600' : 'text-gray-600'}`}>
-                  {formatTime(timeRemaining)}
-                </span>
+            {timeLimitMinutes && timeLimitMinutes > 0 && secondsLeft !== null && (
+              <div className={`flex items-center justify-center gap-3 px-6 py-4 rounded-2xl text-base font-bold shadow-sm ${
+                isTimeUp
+                  ? 'bg-red-100 text-red-700 border-2 border-red-400'
+                  : secondsLeft <= 60
+                  ? 'bg-orange-100 text-orange-700 border-2 border-orange-300 animate-pulse'
+                  : 'bg-gray-900 text-white'
+              }`}>
+                {isTimeUp ? (
+                  <span>⏰ Time is up! You can no longer submit.</span>
+                ) : (
+                  <>
+                    <span>⏱ Time Remaining</span>
+                    <span className="font-mono text-2xl tracking-widest">{formatTimeLeft(secondsLeft)}</span>
+                  </>
+                )}
               </div>
             )}
             <span className="text-sm text-gray-400">
