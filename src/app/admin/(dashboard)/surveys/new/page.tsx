@@ -35,6 +35,7 @@ export default function NewSurveyPage() {
   const [endMinute, setEndMinute] = useState('00')
   const [endAmPm, setEndAmPm] = useState<'AM' | 'PM'>('PM')
   const [allowPrevious, setAllowPrevious] = useState(true)
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState(0)
   const [questions, setQuestions] = useState<Question[]>([
     {
       id: crypto.randomUUID(),
@@ -185,6 +186,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           ends_at: buildISOString(endDate, endHour, endMinute, endAmPm),
           created_by: user?.id,
           allow_previous: allowPrevious,
+          time_limit_minutes: timeLimitMinutes,
         })
         .select()
         .single()
@@ -378,6 +380,33 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                 allowPrevious ? 'left-7' : 'left-1'
               }`} />
             </button>
+          </div>
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Time Limit</label>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Set a countdown timer for respondents. Set to 0 for no time limit.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 ml-6">
+              <select
+                value={timeLimitMinutes}
+                onChange={(e) => setTimeLimitMinutes(Number(e.target.value))}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+              >
+                <option value={0}>No limit</option>
+                <option value={10}>10 minutes</option>
+                <option value={15}>15 minutes</option>
+                <option value={20}>20 minutes</option>
+                <option value={30}>30 minutes</option>
+                <option value={45}>45 minutes</option>
+                <option value={60}>1 hour</option>
+                <option value={90}>1.5 hours</option>
+                <option value={120}>2 hours</option>
+                <option value={180}>3 hours</option>
+              </select>
+            </div>
           </div>
         </div>
 
