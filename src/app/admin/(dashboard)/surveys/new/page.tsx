@@ -74,14 +74,10 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
   } else {
     if (h !== 12) h += 12
   }
-  // Use Date.UTC-based approach to preserve local time:
-  // Parse the date parts manually to avoid JS treating the string as UTC
   const [year, month, day] = date.split('-').map(Number)
-  const d = new Date(year, month - 1, day, h, m, 0)
-  // Now offset to store as if it were UTC so that when read back it shows the same time
-  const tzOffset = d.getTimezoneOffset() * 60000
-  const adjusted = new Date(d.getTime() - tzOffset)
-  return isNaN(adjusted.getTime()) ? null : adjusted.toISOString()
+  // Store using UTC so what admin types is exactly what gets saved and displayed
+  const iso = new Date(Date.UTC(year, month - 1, day, h, m, 0)).toISOString()
+  return iso
 }
 
   const addQuestion = () => {

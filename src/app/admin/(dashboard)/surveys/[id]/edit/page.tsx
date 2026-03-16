@@ -42,22 +42,21 @@ export default function EditSurveyPage() {
   const [endAmPm, setEndAmPm] = useState<'AM' | 'PM'>('PM')
   const [questions, setQuestions] = useState<Question[]>([])
 
-  const toLocalInputValue = (isoString: string): { date: string, time: string, ampm: 'AM' | 'PM', hour: string, minute: string } => {
-    if (!isoString) return { date: '', time: '', ampm: 'AM', hour: '', minute: '' }
+  const toLocalInputValue = (isoString: string) => {
+    if (!isoString) return { date: '', hour: '08', minute: '00', ampm: 'AM' as 'AM' | 'PM' }
     const d = new Date(isoString)
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    const hours24 = d.getHours()
-    const minutes = String(d.getMinutes()).padStart(2, '0')
-    const ampm = hours24 >= 12 ? 'PM' : 'AM'
-    const hours12 = hours24 % 12 || 12
+    const year = d.getUTCFullYear()
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(d.getUTCDate()).padStart(2, '0')
+    let hours = d.getUTCHours()
+    const minutes = String(d.getUTCMinutes()).padStart(2, '0')
+    const ampm: 'AM' | 'PM' = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12 || 12
     return {
       date: `${year}-${month}-${day}`,
-      time: `${String(hours12).padStart(2, '0')}:${minutes}`,
-      ampm,
-      hour: String(hours12).padStart(2, '0'),
+      hour: String(hours).padStart(2, '0'),
       minute: minutes,
+      ampm,
     }
   }
 
@@ -70,14 +69,10 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
   } else {
     if (h !== 12) h += 12
   }
-  // Use Date.UTC-based approach to preserve local time:
-  // Parse the date parts manually to avoid JS treating the string as UTC
   const [year, month, day] = date.split('-').map(Number)
-  const d = new Date(year, month - 1, day, h, m, 0)
-  // Now offset to store as if it were UTC so that when read back it shows the same time
-  const tzOffset = d.getTimezoneOffset() * 60000
-  const adjusted = new Date(d.getTime() - tzOffset)
-  return isNaN(adjusted.getTime()) ? null : adjusted.toISOString()
+  // Store using UTC so what admin types is exactly what gets saved and displayed
+  const iso = new Date(Date.UTC(year, month - 1, day, h, m, 0)).toISOString()
+  return iso
 }
 
   useEffect(() => {
