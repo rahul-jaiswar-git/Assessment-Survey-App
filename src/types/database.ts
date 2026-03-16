@@ -41,6 +41,7 @@ export interface Database {
           updated_at: string
           starts_at: string | null
           ends_at: string | null
+          allow_previous: boolean
         }
         Insert: {
           id?: string
@@ -53,6 +54,7 @@ export interface Database {
           updated_at?: string
           starts_at?: string | null
           ends_at?: string | null
+          allow_previous?: boolean
         }
         Update: {
           id?: string
@@ -65,6 +67,7 @@ export interface Database {
           updated_at?: string
           starts_at?: string | null
           ends_at?: string | null
+          allow_previous?: boolean
         }
       }
       questions: {

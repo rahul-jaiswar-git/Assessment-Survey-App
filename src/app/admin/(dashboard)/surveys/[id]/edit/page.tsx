@@ -40,6 +40,7 @@ export default function EditSurveyPage() {
   const [endHour, setEndHour] = useState('05')
   const [endMinute, setEndMinute] = useState('00')
   const [endAmPm, setEndAmPm] = useState<'AM' | 'PM'>('PM')
+  const [allowPrevious, setAllowPrevious] = useState(true)
   const [questions, setQuestions] = useState<Question[]>([])
 
   const toLocalInputValue = (isoString: string) => {
@@ -102,6 +103,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           setTitle(survey.title || '')
           setDescription(survey.description || '')
           setCategory(survey.category)
+          setAllowPrevious(survey.allow_previous ?? true)
           if (survey.starts_at) {
             const s = toLocalInputValue(survey.starts_at)
             setStartDate(s.date)
@@ -235,6 +237,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           status,
           starts_at: buildISOString(startDate, startHour, startMinute, startAmPm),
           ends_at: buildISOString(endDate, endHour, endMinute, endAmPm),
+          allow_previous: allowPrevious,
         })
         .eq('id', id)
 
@@ -410,6 +413,27 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                 </div>
               </div>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Allow Previous Button</label>
+              <p className="text-xs text-gray-500 mt-0.5">
+                When enabled, respondents can go back to review and edit previous answers.
+                Disable this for quiz-style surveys where going back is not allowed.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAllowPrevious(!allowPrevious)}
+              className={`relative w-12 h-6 rounded-full transition-colors flex-shrink-0 ml-6 ${
+                allowPrevious ? 'bg-gray-900' : 'bg-gray-300'
+              }`}
+            >
+              <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${
+                allowPrevious ? 'left-7' : 'left-1'
+              }`} />
+            </button>
           </div>
         </div>
 

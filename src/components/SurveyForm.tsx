@@ -7,9 +7,10 @@ interface SurveyFormProps {
   surveyId: string
   questions: any[]
   status?: 'DRAFT' | 'PUBLISHED'
+  allowPrevious?: boolean
 }
 
-export default function SurveyForm({ surveyId, questions, status }: SurveyFormProps) {
+export default function SurveyForm({ surveyId, questions, status, allowPrevious = true }: SurveyFormProps) {
   const [answers, setAnswers] = useState<Record<string, any>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -259,14 +260,16 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
       )}
 
       <div className="flex items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-          disabled={currentIndex === 0}
-          className="px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 select-none"
-        >
-          ← Previous
-        </button>
+        {allowPrevious && (
+          <button
+            type="button"
+            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+            disabled={currentIndex === 0}
+            className="px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 select-none"
+          >
+            ← Previous
+          </button>
+        )}
 
         {currentIndex < questions.length - 1 ? (
           <button
