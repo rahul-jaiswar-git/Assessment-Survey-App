@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createSRClient } from '@supabase/supabase-js'
 import SurveyForm from '@/components/SurveyForm'
 import { Eye } from 'lucide-react'
+import { formatDateTime } from '@/lib/formatDate'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
@@ -76,7 +77,7 @@ export default async function PublicSurveyPage({
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Not Yet Open</h1>
-            <p className="text-gray-600">This survey opens on {new Date(survey.starts_at).toLocaleString()}. Please come back then.</p>
+            <p className="text-gray-600">This survey opens on {formatDateTime(survey.starts_at)}. Please come back then.</p>
           </div>
         </div>
       )
@@ -87,7 +88,7 @@ export default async function PublicSurveyPage({
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey Closed</h1>
-            <p className="text-gray-600">This survey closed on {new Date(survey.ends_at).toLocaleString()}. Submissions are no longer accepted.</p>
+            <p className="text-gray-600">This survey closed on {formatDateTime(survey.ends_at)}. Submissions are no longer accepted.</p>
           </div>
         </div>
       )

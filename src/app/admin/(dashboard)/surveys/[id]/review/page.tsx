@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Eye } from 'lucide-react'
+import { formatDateTime } from '@/lib/formatDate'
 
 export default async function ReviewSurveyPage({
   params,
@@ -94,17 +95,11 @@ export default async function ReviewSurveyPage({
             </span>
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">
-              Start:{' '}
-              {survey.starts_at
-                ? new Date(survey.starts_at).toLocaleString()
-                : '—'}
+              Start: {formatDateTime(survey.starts_at)}
             </span>
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">
-              End:{' '}
-              {survey.ends_at
-                ? new Date(survey.ends_at).toLocaleString()
-                : '—'}
+              End: {formatDateTime(survey.ends_at)}
             </span>
           </div>
         </div>
