@@ -153,6 +153,7 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
               <input
                 type="text"
                 required={question.is_required}
+                value={answers[question.id] || ''}
                 onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
                 placeholder="Your answer"
@@ -162,6 +163,7 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
             {question.question_type === 'LONG_TEXT' && (
               <textarea
                 required={question.is_required}
+                value={answers[question.id] || ''}
                 onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
                 placeholder="Your answer"
@@ -177,6 +179,7 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
                       type="radio"
                       name={question.id}
                       required={question.is_required}
+                      checked={answers[question.id] === option}
                       onChange={() => handleAnswerChange(question.id, option)}
                       className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
                     />
@@ -192,6 +195,7 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
                   <label key={option} className="flex items-center gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
+                      checked={(answers[question.id] || []).includes(option)}
                       onChange={(e) => handleCheckboxChange(question.id, option, e.target.checked)}
                       className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
                     />
@@ -210,6 +214,7 @@ export default function SurveyForm({ surveyId, questions, status }: SurveyFormPr
                       name={question.id}
                       value={option}
                       required={question.is_required}
+                      checked={answers[question.id] === option}
                       onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                       className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
                     />
