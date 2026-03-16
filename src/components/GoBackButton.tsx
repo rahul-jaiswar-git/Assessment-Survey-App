@@ -1,26 +1,17 @@
 'use client'
 
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { Suspense } from 'react'
 
-export default function GoBackButton() {
+function GoBackButtonInner() {
   const router = useRouter()
-  const pathname = usePathname()
 
   const handleClick = () => {
-    const ref = document.referrer
-    const sameOrigin = !!ref && (() => {
-      try {
-        return new URL(ref).origin === window.location.origin
-      } catch {
-        return false
-      }
-    })()
-    const fallback = pathname && pathname.startsWith('/admin') ? '/admin/dashboard' : '/'
-    if (sameOrigin && window.history.length > 1) {
+    if (window.history.length > 1) {
       router.back()
     } else {
-      router.push(fallback)
+      router.push('/')
     }
   }
 
@@ -34,5 +25,13 @@ export default function GoBackButton() {
       <ArrowLeft className="w-4 h-4" />
       <span>Go Back</span>
     </button>
+  )
+}
+
+export default function GoBackButton() {
+  return (
+    <Suspense fallback={null}>
+      <GoBackButtonInner />
+    </Suspense>
   )
 }
