@@ -18,6 +18,7 @@ import { FileSpreadsheet, FileText as FilePdf } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { formatDateTime } from '@/lib/formatDate'
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8']
 
@@ -136,10 +137,10 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
       ['Status', selectedSurvey.status],
       ['Total Responses', filteredResponses.length],
       ['Total Questions', selectedSurvey.questions.filter((q: any) => q.question_type !== 'SECTION').length],
-      ['Report Generated', new Date().toLocaleString()],
+      ['Report Generated', formatDateTime(new Date().toISOString())],
       [],
-      ['Start Date', selectedSurvey.starts_at ? new Date(selectedSurvey.starts_at).toLocaleString() : 'No restriction'],
-      ['End Date', selectedSurvey.ends_at ? new Date(selectedSurvey.ends_at).toLocaleString() : 'No restriction'],
+      ['Start Date', selectedSurvey.starts_at ? formatDateTime(selectedSurvey.starts_at) : 'No restriction'],
+      ['End Date', selectedSurvey.ends_at ? formatDateTime(selectedSurvey.ends_at) : 'No restriction'],
     ]
     const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows)
     wsSummary['!cols'] = [{ wch: 25 }, { wch: 50 }]
@@ -157,7 +158,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
     const dataRows = filteredResponses.map((r: any, idx: number) => {
       const row: any[] = [
         idx + 1,
-        new Date(r.submitted_at).toLocaleString(),
+        formatDateTime(r.submitted_at),
       ]
       answerableQuestions.forEach((q: any) => {
         const answer = r.answers.find((a: any) => a.question_id === q.id)
@@ -282,9 +283,9 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
         ['Status', selectedSurvey.status],
         ['Total Responses', String(filteredResponses.length)],
         ['Total Questions', String(selectedSurvey.questions.filter((q: any) => q.question_type !== 'SECTION').length)],
-        ['Report Generated', new Date().toLocaleString()],
-        ['Start Date', selectedSurvey.starts_at ? new Date(selectedSurvey.starts_at).toLocaleString() : 'No restriction'],
-        ['End Date', selectedSurvey.ends_at ? new Date(selectedSurvey.ends_at).toLocaleString() : 'No restriction'],
+        ['Report Generated', formatDateTime(new Date().toISOString())],
+        ['Start Date', selectedSurvey.starts_at ? formatDateTime(selectedSurvey.starts_at) : 'No restriction'],
+        ['End Date', selectedSurvey.ends_at ? formatDateTime(selectedSurvey.ends_at) : 'No restriction'],
       ],
       theme: 'grid',
       headStyles: { fillColor: [17, 24, 39], textColor: 255, fontStyle: 'bold' },
