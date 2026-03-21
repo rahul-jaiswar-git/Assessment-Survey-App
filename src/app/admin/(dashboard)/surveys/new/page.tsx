@@ -16,6 +16,7 @@ interface Question {
   options: string[]
   correct_answer: string
   is_required: boolean
+  imageChoices?: string[]
 }
 
 export default function NewSurveyPage() {
@@ -235,7 +236,11 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
         question_text: q.question_text,
         question_type: q.question_type,
         options: q.question_type === 'IMAGE'
-          ? { images: (q.options || []).filter(Boolean), answerType: q.correct_answer || 'SHORT_TEXT' }
+          ? {
+              images: (q.options || []).filter(Boolean),
+              answerType: q.correct_answer || 'SHORT_TEXT',
+              choices: q.correct_answer === 'SINGLE_CHOICE' ? (q.imageChoices || []) : []
+            }
           : q.question_type === 'SECTION'
           ? { description: q.options?.[0] || '' }
           : q.question_type === 'QUIZ'
@@ -746,6 +751,48 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                       <option value="SINGLE_CHOICE">Single Choice</option>
                     </select>
                   </div>
+
+                  {/* Choices input section for SINGLE_CHOICE answer type */}
+                  {question.correct_answer === 'SINGLE_CHOICE' && (
+                    <div className="mt-3 space-y-2">
+                      <label className="block text-xs font-medium text-gray-600">Answer Choices</label>
+                      {(question.imageChoices || []).map((choice: string, idx: number) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={choice}
+                            onChange={(e) => {
+                              const newChoices = [...(question.imageChoices || [])]
+                              newChoices[idx] = e.target.value
+                              updateQuestion(question.id, { imageChoices: newChoices })
+                            }}
+                            placeholder={`Choice ${idx + 1}`}
+                            className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newChoices = (question.imageChoices || []).filter((_: any, i: number) => i !== idx)
+                              updateQuestion(question.id, { imageChoices: newChoices })
+                            }}
+                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newChoices = [...(question.imageChoices || []), '']
+                          updateQuestion(question.id, { imageChoices: newChoices })
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-700"
+                      >
+                        + Add Choice
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
                 </>
