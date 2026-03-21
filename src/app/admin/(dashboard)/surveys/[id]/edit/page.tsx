@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Trash2, Save, Layers } from 'lucide-react'
+import { Plus, Trash2, ArrowUp, ArrowDown, Save, Layers } from 'lucide-react'
 
 type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION'
 type Category = 'INDUSTRIAL' | 'PROFESSIONAL' | 'SKILL_ASSESSMENT'
@@ -43,6 +43,16 @@ export default function EditSurveyPage() {
   const [allowPrevious, setAllowPrevious] = useState(true)
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(0)
   const [questions, setQuestions] = useState<Question[]>([])
+
+  const moveQuestion = (index: number, direction: 'up' | 'down') => {
+    const newQuestions = [...questions]
+    const swapIndex = direction === 'up' ? index - 1 : index + 1
+    if (swapIndex < 0 || swapIndex >= newQuestions.length) return
+    const temp = newQuestions[index]
+    newQuestions[index] = newQuestions[swapIndex]
+    newQuestions[swapIndex] = temp
+    setQuestions(newQuestions)
+  }
 
   const toLocalInputValue = (isoString: string) => {
     if (!isoString) return { date: '', hour: '08', minute: '00', ampm: 'AM' as 'AM' | 'PM' }
@@ -502,7 +512,31 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
               ) : (
                 <>
                   <div className="flex items-start justify-between gap-4 mb-6">
+                    {/* Up / Down reorder buttons */}
+                    <div className="flex flex-col gap-1 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => moveQuestion(qIndex, 'up')}
+                        disabled={qIndex === 0}
+                        title="Move question up"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-95"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveQuestion(qIndex, 'down')}
+                        disabled={qIndex === questions.length - 1}
+                        title="Move question down"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-95"
+                      >
+                        <ArrowDown className="w-4 h-4" />
+                      </button>
+                    </div>
                     <div className="flex-1">
+                      <span className="text-xs font-bold text-gray-400 mb-1 block">
+                        Q{qIndex + 1}
+                      </span>
                       <input
                         type="text"
                         value={question.question_text}
