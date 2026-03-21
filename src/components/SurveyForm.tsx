@@ -359,11 +359,19 @@ export default function SurveyForm({
 
           {question.question_type === 'IMAGE' && (() => {
             const opts = question.options as any
-            const images: string[] = Array.isArray(opts?.images) ? opts.images : (Array.isArray(opts) ? opts : []).filter(Boolean)
+            // Support both new format { images: [], answerType: '' } and old format [url]
+            const images: string[] = Array.isArray(opts?.images)
+              ? opts.images.filter(Boolean)
+              : Array.isArray(opts)
+              ? opts.filter(Boolean)
+              : opts?.imageUrl
+              ? [opts.imageUrl]
+              : []
             const answerType: string = opts?.answerType || 'SHORT_TEXT'
+
             return (
               <div className="space-y-4">
-                {/* Show all images */}
+                {/* Show all images in a grid */}
                 {images.length > 0 && (
                   <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                     {images.map((url: string, i: number) => (
@@ -377,8 +385,9 @@ export default function SurveyForm({
                     ))}
                   </div>
                 )}
-                {/* Answer input based on answerType */}
-                {answerType === 'LONG_TEXT' ? (
+
+                {/* Answer input — changes based on answerType set by admin */}
+                {answerType === 'LONG_TEXT' && (
                   <textarea
                     required={question.is_required}
                     value={answers[question.id] || ''}
@@ -387,7 +396,9 @@ export default function SurveyForm({
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
                     placeholder="Your answer"
                   />
-                ) : (
+                )}
+
+                {answerType === 'SHORT_TEXT' && (
                   <input
                     type="text"
                     required={question.is_required}
@@ -396,6 +407,25 @@ export default function SurveyForm({
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
                     placeholder="Your answer"
                   />
+                )}
+
+                {answerType === 'SINGLE_CHOICE' && Array.isArray(opts?.choices) && opts.choices.length > 0 && (
+                  <div className="space-y-3">
+                    {opts.choices.map((option: string) => (
+                      <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={question.id}
+                          value={option}
+                          required={question.is_required}
+                          checked={answers[question.id] === option}
+                          onChange={() => handleAnswerChange(question.id, option)}
+                          className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
+                        />
+                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors">{option}</span>
+                      </label>
+                    ))}
+                  </div>
                 )}
               </div>
             )
