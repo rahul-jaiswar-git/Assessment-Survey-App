@@ -357,22 +357,49 @@ export default function SurveyForm({
             />
           )}
 
-          {question.question_type === 'IMAGE' && (
-            <div className="space-y-4">
-              {question.options?.[0] && (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  <img
-                    src={question.options[0]}
-                    alt="Question image"
-                    className="max-w-full h-auto rounded-lg"
+          {question.question_type === 'IMAGE' && (() => {
+            const opts = question.options as any
+            const images: string[] = Array.isArray(opts?.images) ? opts.images : (Array.isArray(opts) ? opts : []).filter(Boolean)
+            const answerType: string = opts?.answerType || 'SHORT_TEXT'
+            return (
+              <div className="space-y-4">
+                {/* Show all images */}
+                {images.length > 0 && (
+                  <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {images.map((url: string, i: number) => (
+                      <img
+                        key={i}
+                        src={url}
+                        alt={`Image ${i + 1}`}
+                        className="w-full rounded-xl border border-gray-100 object-contain max-h-72"
+                        draggable={false}
+                      />
+                    ))}
+                  </div>
+                )}
+                {/* Answer input based on answerType */}
+                {answerType === 'LONG_TEXT' ? (
+                  <textarea
+                    required={question.is_required}
+                    value={answers[question.id] || ''}
+                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
+                    placeholder="Your answer"
                   />
-                </div>
-              )}
-              <p className="text-sm text-gray-600">
-                This question displays an image for reference. No input required.
-              </p>
-            </div>
-          )}
+                ) : (
+                  <input
+                    type="text"
+                    required={question.is_required}
+                    value={answers[question.id] || ''}
+                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                    placeholder="Your answer"
+                  />
+                )}
+              </div>
+            )
+          })()}
         </div>
       )}
 

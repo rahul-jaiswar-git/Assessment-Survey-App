@@ -67,8 +67,12 @@ export default function EditSurveyPage() {
       const { data: urlData } = supabase.storage
         .from('question-images')
         .getPublicUrl(data.path)
-      // Store the public URL in options[0]
-      updateOption(questionId, 0, urlData.publicUrl)
+      // Append to existing options array instead of replacing
+      setQuestions(prev => prev.map(q =>
+        q.id === questionId
+          ? { ...q, options: [...(q.options || []), urlData.publicUrl] }
+          : q
+      ))
     } catch (err) {
       alert('Failed to upload image. Please try again.')
     } finally {
@@ -163,6 +167,10 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           } else if (q.question_type === 'SECTION' && q.options && typeof q.options === 'object') {
             const obj = q.options as any
             options = [typeof obj.description === 'string' ? obj.description : '']
+          } else if (q.question_type === 'IMAGE' && q.options && typeof q.options === 'object') {
+            const obj = q.options as any
+            options = Array.isArray(obj.images) ? obj.images : []
+            correctAns = obj.answerType || 'SHORT_TEXT'
           } else {
             options = Array.isArray(q.options) ? q.options : []
           }
@@ -282,7 +290,9 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
         survey_id: id,
         question_text: q.question_text,
         question_type: q.question_type,
-        options: q.question_type === 'SECTION'
+        options: q.question_type === 'IMAGE'
+          ? { images: (q.options || []).filter(Boolean), answerType: q.correct_answer || 'SHORT_TEXT' }
+          : q.question_type === 'SECTION'
           ? { description: q.options?.[0] || '' }
           : q.question_type === 'QUIZ'
           ? { choices: q.options.filter((opt) => opt.trim() !== ''), correct: q.correct_answer }
@@ -581,7 +591,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                         } else if (newType === 'DATE') {
                           resetOptions = []
                         } else if (newType === 'IMAGE') {
-                          resetOptions = ['']
+                          resetOptions = []
                         } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
                           resetOptions = ['']
                         }
@@ -730,48 +740,72 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
               )}
 
               {question.question_type === 'IMAGE' && (
-                <div className="ml-4 mb-6">
-                  <label className="block text-sm font-medium text-gray-700">Image Upload</label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Upload an image that respondents will see with this question.
+                <div className="ml-4 mb-6 space-y-3">
+                  <label className="block text-sm font-medium text-gray-700">Question Images</label>
+                  <p className="text-xs text-gray-500">
+                    Upload one or more images. Respondents will see all images above the answer input.
                   </p>
-                  <div className="space-y-3">
-                    {question.options?.[0] ? (
-                      <div className="space-y-2">
-                        <img
-                          src={question.options[0]}
-                          alt="Question image"
-                          className="max-w-sm rounded-lg border border-gray-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => updateOption(question.id, 0, '')}
-                          className="text-sm text-red-600 hover:text-red-700"
-                        >
-                          Remove Image
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0]
-                            if (file) handleImageUpload(question.id, file)
-                          }}
-                          disabled={imageUploading[question.id]}
-                          className="hidden"
-                          id={`image-upload-${question.id}`}
-                        />
-                        <label
-                          htmlFor={`image-upload-${question.id}`}
-                          className="cursor-pointer text-sm text-gray-600 hover:text-gray-700"
-                        >
-                          {imageUploading[question.id] ? 'Uploading...' : 'Click to upload image'}
-                        </label>
-                      </div>
-                    )}
+
+                  {/* Show all uploaded images */}
+                  {(question.options || []).filter(Boolean).length > 0 && (
+                    <div className="flex flex-wrap gap-3">
+                      {(question.options || []).filter(Boolean).map((url, imgIdx) => (
+                        <div key={imgIdx} className="relative">
+                          <img
+                            src={url}
+                            alt={`Image ${imgIdx + 1}`}
+                            className="w-32 h-32 object-cover rounded-xl border border-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeOption(question.id, imgIdx)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 cursor-pointer"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Always show upload button */}
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleImageUpload(question.id, file)
+                        e.target.value = ''
+                      }}
+                      disabled={imageUploading[question.id]}
+                      className="hidden"
+                      id={`image-upload-${question.id}`}
+                    />
+                    <label
+                      htmlFor={`image-upload-${question.id}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer text-sm text-gray-600 hover:border-gray-500 hover:text-gray-800 transition-colors"
+                    >
+                      {imageUploading[question.id] ? (
+                        <><div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> Uploading...</>
+                      ) : (
+                        <>+ Add Image</>
+                      )}
+                    </label>
+                  </div>
+
+                  {/* Answer type selector */}
+                  <div className="mt-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Answer Type</label>
+                    <select
+                      value={question.correct_answer || 'SHORT_TEXT'}
+                      onChange={(e) => updateQuestion(question.id, { correct_answer: e.target.value })}
+                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                    >
+                      <option value="SHORT_TEXT">Short Text Answer</option>
+                      <option value="LONG_TEXT">Long Text Answer</option>
+                      <option value="SINGLE_CHOICE">Single Choice</option>
+                    </select>
                   </div>
                 </div>
               )}
