@@ -171,20 +171,33 @@ export default async function ReviewSurveyPage({
                   Respondents will see a date picker to select a date.
                 </div>
               )}
-              {q.question_type === 'IMAGE' && (
-                <div className="mt-2 space-y-2">
-                  {Array.isArray(q.options) && q.options?.[0] && (
-                    <img
-                      src={q.options[0]}
-                      alt="Question image"
-                      className="max-w-sm rounded-lg border border-gray-200"
-                    />
-                  )}
-                  <div className="text-sm text-gray-600">
-                    This question displays an image for reference. No input required.
+              {q.question_type === 'IMAGE' && (() => {
+                const opts = q.options as any
+                const images: string[] = Array.isArray(opts?.images) ? opts.images : (Array.isArray(opts) ? opts : []).filter(Boolean)
+                const answerType: string = opts?.answerType || 'SHORT_TEXT'
+                return (
+                  <div className="mt-2 space-y-3">
+                    {/* Show all images */}
+                    {images.length > 0 && (
+                      <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                        {images.map((url: string, i: number) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`Image ${i + 1}`}
+                            className="w-full rounded-xl border border-gray-100 object-contain max-h-72"
+                            draggable={false}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {/* Answer type info */}
+                    <div className="text-sm text-gray-600">
+                      Answer Type: <span className="font-medium">{answerType.replace('_', ' ')}</span>
+                    </div>
                   </div>
-                </div>
-              )}
+                )
+              })()}
               <div className="mt-2 text-xs text-gray-500">
                 Required: {q.is_required ? 'Yes' : 'No'}
               </div>
