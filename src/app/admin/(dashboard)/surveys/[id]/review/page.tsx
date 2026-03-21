@@ -166,6 +166,25 @@ export default async function ReviewSurveyPage({
                   ))}
                 </div>
               )}
+              {q.question_type === 'DATE' && (
+                <div className="mt-2 text-sm text-gray-600">
+                  Respondents will see a date picker to select a date.
+                </div>
+              )}
+              {q.question_type === 'IMAGE' && (
+                <div className="mt-2 space-y-2">
+                  {Array.isArray(q.options) && q.options?.[0] && (
+                    <img
+                      src={q.options[0]}
+                      alt="Question image"
+                      className="max-w-sm rounded-lg border border-gray-200"
+                    />
+                  )}
+                  <div className="text-sm text-gray-600">
+                    This question displays an image for reference. No input required.
+                  </div>
+                </div>
+              )}
               <div className="mt-2 text-xs text-gray-500">
                 Required: {q.is_required ? 'Yes' : 'No'}
               </div>

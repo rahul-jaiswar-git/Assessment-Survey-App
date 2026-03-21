@@ -346,6 +346,33 @@ export default function SurveyForm({
               ))}
             </div>
           )}
+
+          {question.question_type === 'DATE' && (
+            <input
+              type="date"
+              required={question.is_required}
+              value={answers[question.id] || ''}
+              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 bg-white"
+            />
+          )}
+
+          {question.question_type === 'IMAGE' && (
+            <div className="space-y-4">
+              {question.options?.[0] && (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                  <img
+                    src={question.options[0]}
+                    alt="Question image"
+                    className="max-w-full h-auto rounded-lg"
+                  />
+                </div>
+              )}
+              <p className="text-sm text-gray-600">
+                This question displays an image for reference. No input required.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
