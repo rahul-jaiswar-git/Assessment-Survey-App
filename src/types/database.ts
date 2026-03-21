@@ -77,7 +77,7 @@ export interface Database {
           id: string
           survey_id: string
           question_text: string
-          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION'
+          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION' | 'DATE' | 'IMAGE'
           options: Json | null
           order_index: number
           is_required: boolean
@@ -87,7 +87,7 @@ export interface Database {
           id?: string
           survey_id: string
           question_text: string
-          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION'
+          question_type: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION' | 'DATE' | 'IMAGE'
           options?: Json | null
           order_index: number
           is_required?: boolean
@@ -97,7 +97,7 @@ export interface Database {
           id?: string
           survey_id?: string
           question_text?: string
-          question_type?: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION'
+          question_type?: 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION' | 'DATE' | 'IMAGE'
           options?: Json | null
           order_index?: number
           is_required?: boolean

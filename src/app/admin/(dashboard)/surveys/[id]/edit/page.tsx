@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Plus, Trash2, ArrowUp, ArrowDown, Save, Layers } from 'lucide-react'
 
-type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION'
+type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION' | 'DATE' | 'IMAGE'
 type Category = 'INDUSTRIAL' | 'PROFESSIONAL' | 'SKILL_ASSESSMENT'
 
 interface Question {
@@ -43,6 +43,7 @@ export default function EditSurveyPage() {
   const [allowPrevious, setAllowPrevious] = useState(true)
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(0)
   const [questions, setQuestions] = useState<Question[]>([])
+  const [imageUploading, setImageUploading] = useState<Record<string, boolean>>({})
 
   const moveQuestion = (index: number, direction: 'up' | 'down') => {
     const newQuestions = [...questions]
@@ -52,6 +53,27 @@ export default function EditSurveyPage() {
     newQuestions[index] = newQuestions[swapIndex]
     newQuestions[swapIndex] = temp
     setQuestions(newQuestions)
+  }
+
+  const handleImageUpload = async (questionId: string, file: File) => {
+    setImageUploading(prev => ({ ...prev, [questionId]: true }))
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `${questionId}-${Date.now()}.${ext}`
+      const { data, error } = await supabase.storage
+        .from('question-images')
+        .upload(fileName, file, { upsert: true })
+      if (error) throw error
+      const { data: urlData } = supabase.storage
+        .from('question-images')
+        .getPublicUrl(data.path)
+      // Store the public URL in options[0]
+      updateOption(questionId, 0, urlData.publicUrl)
+    } catch (err) {
+      alert('Failed to upload image. Please try again.')
+    } finally {
+      setImageUploading(prev => ({ ...prev, [questionId]: false }))
+    }
   }
 
   const toLocalInputValue = (isoString: string) => {
@@ -556,6 +578,10 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                           resetOptions = ['', '', '']
                         } else if (newType === 'SECTION') {
                           resetOptions = ['']
+                        } else if (newType === 'DATE') {
+                          resetOptions = []
+                        } else if (newType === 'IMAGE') {
+                          resetOptions = ['']
                         } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
                           resetOptions = ['']
                         }
@@ -570,6 +596,8 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                       <option value="RATING">Rating (1–5)</option>
                       <option value="QUIZ">Quiz (Correct Answer)</option>
                       <option value="SECTION">Section</option>
+                      <option value="DATE">Date</option>
+                      <option value="IMAGE">Image Question</option>
                     </select>
                   </div>
 
@@ -684,6 +712,65 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                       </select>
                     ) : (
                       <div className="mt-1 text-xs text-gray-500">Add options above first</div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {question.question_type === 'DATE' && (
+                <div className="ml-4 mb-6">
+                  <label className="block text-sm font-medium text-gray-700">Date Input</label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Respondents will see a date picker to select a date.
+                  </p>
+                  <div className="text-sm text-gray-600">
+                    No additional configuration needed.
+                  </div>
+                </div>
+              )}
+
+              {question.question_type === 'IMAGE' && (
+                <div className="ml-4 mb-6">
+                  <label className="block text-sm font-medium text-gray-700">Image Upload</label>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Upload an image that respondents will see with this question.
+                  </p>
+                  <div className="space-y-3">
+                    {question.options?.[0] ? (
+                      <div className="space-y-2">
+                        <img
+                          src={question.options[0]}
+                          alt="Question image"
+                          className="max-w-sm rounded-lg border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateOption(question.id, 0, '')}
+                          className="text-sm text-red-600 hover:text-red-700"
+                        >
+                          Remove Image
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) handleImageUpload(question.id, file)
+                          }}
+                          disabled={imageUploading[question.id]}
+                          className="hidden"
+                          id={`image-upload-${question.id}`}
+                        />
+                        <label
+                          htmlFor={`image-upload-${question.id}`}
+                          className="cursor-pointer text-sm text-gray-600 hover:text-gray-700"
+                        >
+                          {imageUploading[question.id] ? 'Uploading...' : 'Click to upload image'}
+                        </label>
+                      </div>
                     )}
                   </div>
                 </div>
