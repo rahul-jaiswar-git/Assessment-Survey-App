@@ -305,10 +305,6 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
         order_index: index,
         is_required: q.question_type === 'SECTION' ? false : q.is_required,
       }))
-      if (questionsToInsert.length > 0) {
-        await supabase.from('questions').insert(questionsToInsert)
-      }
-
       router.push(`/admin/surveys/${id}/review`)
       router.refresh()
     } catch {

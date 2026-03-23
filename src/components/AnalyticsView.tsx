@@ -126,6 +126,20 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
   const exportToExcel = () => {
     if (!selectedSurvey || !filteredResponses.length) return
 
+    // Helper: apply wrap text style to every cell in a worksheet
+    const applyWrapText = (ws: XLSX.WorkSheet) => {
+      if (!ws['!ref']) return
+      const range = XLSX.utils.decode_range(ws['!ref'])
+      for (let R = range.s.r; R <= range.e.r; R++) {
+        for (let C = range.s.c; C <= range.e.c; C++) {
+          const cellAddress = XLSX.utils.encode_cell({ r: R, c: C })
+          if (!ws[cellAddress]) continue
+          if (!ws[cellAddress].s) ws[cellAddress].s = {}
+          ws[cellAddress].s.alignment = { wrapText: true, vertical: 'top' }
+        }
+      }
+    }
+
     const wb = XLSX.utils.book_new()
 
     // ── SHEET 1: Summary ──────────────────────────────────────────
@@ -143,7 +157,8 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
       ['End Date', selectedSurvey.ends_at ? formatDateTime(selectedSurvey.ends_at) : 'No restriction'],
     ]
     const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows)
-    wsSummary['!cols'] = [{ wch: 25 }, { wch: 50 }]
+    wsSummary['!cols'] = [{ wch: 22 }, { wch: 45 }]
+    applyWrapText(wsSummary)
     XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary')
 
     // ── SHEET 2: All Responses (one row per respondent) ───────────
@@ -166,9 +181,11 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
         if (val === null || val === undefined) {
           row.push('')
         } else if (Array.isArray(val)) {
-          row.push(val.join(', '))
+          const joined = val.join(', ')
+          row.push(joined.length > 500 ? joined.substring(0, 497) + '...' : joined)
         } else {
-          row.push(String(val))
+          const strVal = String(val)
+          row.push(strVal.length > 500 ? strVal.substring(0, 497) + '...' : strVal)
         }
       })
       return row
@@ -176,9 +193,15 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
     const wsResponses = XLSX.utils.aoa_to_sheet([headerRow, ...dataRows])
     // Set column widths
     wsResponses['!cols'] = [
-      { wch: 5 },
-      { wch: 22 },
-      ...answerableQuestions.map(() => ({ wch: 35 }))
+      { wch: 5 },   // # column
+      { wch: 20 },  // Submitted At
+      ...answerableQuestions.map(() => ({ wch: 40 }))
+    ]
+    applyWrapText(wsResponses)
+    // Set row heights for wrapped text
+    wsResponses['!rows'] = [
+      { hpt: 30 }, // header row height
+      ...filteredResponses.map(() => ({ hpt: 60 })) // data rows — tall enough for 3 lines
     ]
     XLSX.utils.book_append_sheet(wb, wsResponses, 'All Responses')
 
@@ -243,7 +266,11 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
     })
 
     const wsStats = XLSX.utils.aoa_to_sheet(statsRows)
-    wsStats['!cols'] = [{ wch: 45 }, { wch: 15 }, { wch: 15 }]
+    wsStats['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 12 }]
+    applyWrapText(wsStats)
+    // Set row heights for stats sheet
+    const statsRowsCount = statsRows.length
+    wsStats['!rows'] = Array.from({ length: statsRowsCount }, () => ({ hpt: 45 }))
     XLSX.utils.book_append_sheet(wb, wsStats, 'Question Stats')
 
     // ── Download ──────────────────────────────────────────────────
