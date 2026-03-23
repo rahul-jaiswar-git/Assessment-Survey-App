@@ -74,41 +74,52 @@ export default async function ReviewSurveyPage({
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
         <div className="p-8">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">{survey.title}</h1>
-            <span
-              className={`px-2 py-1 text-xs font-medium rounded-full ${
-                survey.status === 'PUBLISHED'
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : 'bg-gray-100 text-gray-600'
-              }`}
-            >
-              {survey.status}
-            </span>
-          </div>
-          {survey.description && (
-            <p className="text-gray-600 mb-4">{survey.description}</p>
-          )}
-          <div className="flex items-center flex-wrap gap-2 text-sm">
-            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">
-              {survey.category.replace('_', ' ')}
-            </span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-900 font-medium">
-              Previous Button: {survey.allow_previous ? (
-                <span className="text-emerald-600 font-medium">Enabled</span>
-              ) : (
-                <span className="text-red-500 font-medium">Disabled</span>
+          <div className="flex items-start gap-4 mb-2">
+            {survey.logo_url && (
+              <img
+                src={survey.logo_url}
+                alt="Logo"
+                className="w-14 h-14 object-contain rounded-xl border border-gray-100 bg-gray-50 flex-shrink-0"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold text-gray-900">{survey.title}</h1>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    survey.status === 'PUBLISHED'
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : 'bg-gray-100 text-gray-600'
+                  }`}
+                >
+                  {survey.status}
+                </span>
+              </div>
+              {survey.description && (
+                <p className="text-gray-600 mt-1">{survey.description}</p>
               )}
-            </span>
-            <span className="text-gray-400">•</span>
-            <span className="text-gray-900 font-medium">
-              Time Limit:{' '}
-              {survey.time_limit_minutes > 0
-                ? `${survey.time_limit_minutes} minutes`
-                : <span className="text-gray-500">No limit</span>
-              }
-            </span>
+              <div className="flex items-center flex-wrap gap-2 text-sm mt-2">
+                <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded">
+                  {survey.category.replace('_', ' ')}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-900 font-medium">
+                  Previous Button: {survey.allow_previous ? (
+                    <span className="text-emerald-600 font-medium">Enabled</span>
+                  ) : (
+                    <span className="text-red-500 font-medium">Disabled</span>
+                  )}
+                </span>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-900 font-medium">
+                  Time Limit:{' '}
+                  {survey.time_limit_minutes > 0
+                    ? `${survey.time_limit_minutes} minutes`
+                    : <span className="text-gray-500">No limit</span>
+                  }
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

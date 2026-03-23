@@ -45,6 +45,28 @@ export default function EditSurveyPage() {
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(0)
   const [questions, setQuestions] = useState<Question[]>([])
   const [imageUploading, setImageUploading] = useState<Record<string, boolean>>({})
+  const [logoUrl, setLogoUrl] = useState('')
+  const [logoUploading, setLogoUploading] = useState(false)
+
+  const handleLogoUpload = async (file: File) => {
+    setLogoUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `logo-${crypto.randomUUID()}.${ext}`
+      const { data, error } = await supabase.storage
+        .from('question-images')
+        .upload(fileName, file, { upsert: true })
+      if (error) throw error
+      const { data: urlData } = supabase.storage
+        .from('question-images')
+        .getPublicUrl(data.path)
+      setLogoUrl(urlData.publicUrl)
+    } catch {
+      alert('Failed to upload logo. Please try again.')
+    } finally {
+      setLogoUploading(false)
+    }
+  }
 
   const moveQuestion = (index: number, direction: 'up' | 'down') => {
     const newQuestions = [...questions]
@@ -143,6 +165,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           setCategory(survey.category)
           setAllowPrevious(survey.allow_previous ?? true)
           setTimeLimitMinutes(survey.time_limit_minutes ?? 0)
+          setLogoUrl(survey.logo_url || '')
           if (survey.starts_at) {
             const s = toLocalInputValue(survey.starts_at)
             setStartDate(s.date)
@@ -282,6 +305,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           ends_at: buildISOString(endDate, endHour, endMinute, endAmPm),
           allow_previous: allowPrevious,
           time_limit_minutes: timeLimitMinutes,
+          logo_url: logoUrl || null,
         })
         .eq('id', id)
 
@@ -338,6 +362,66 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
 
       <form className="space-y-8">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+          {/* Logo Upload Section */}
+          <div className="flex items-start gap-6 pb-6 border-b border-gray-100">
+            {/* Logo preview */}
+            <div className="flex-shrink-0">
+              {logoUrl ? (
+                <div className="relative w-24 h-24">
+                  <img
+                    src={logoUrl}
+                    alt="Survey logo"
+                    className="w-24 h-24 object-contain rounded-2xl border border-gray-200 bg-gray-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setLogoUrl('')}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 cursor-pointer"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 flex items-center justify-center">
+                  <span className="text-3xl text-gray-300">🏢</span>
+                </div>
+              )}
+            </div>
+
+            {/* Upload controls */}
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Survey Logo <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Upload your company or organization logo. It will appear at the top of the survey form.
+                Recommended: square image, PNG or JPG.
+              </p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleLogoUpload(file)
+                  e.target.value = ''
+                }}
+                disabled={logoUploading}
+                className="hidden"
+                id="logo-upload"
+              />
+              <label
+                htmlFor="logo-upload"
+                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors active:scale-95"
+              >
+                {logoUploading ? (
+                  <><div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> Uploading...</>
+                ) : (
+                  <>{logoUrl ? '🔄 Replace Logo' : '📁 Upload Logo'}</>
+                )}
+              </label>
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Survey Title</label>
             <input

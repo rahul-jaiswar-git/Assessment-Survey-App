@@ -43,6 +43,7 @@ export interface Database {
           ends_at: string | null
           allow_previous: boolean
           time_limit_minutes: number
+          logo_url: string | null
         }
         Insert: {
           id?: string
@@ -57,6 +58,7 @@ export interface Database {
           ends_at?: string | null
           allow_previous?: boolean
           time_limit_minutes?: number
+          logo_url?: string | null
         }
         Update: {
           id?: string
@@ -70,6 +72,7 @@ export interface Database {
           starts_at?: string | null
           ends_at?: string | null
           allow_previous?: boolean
+          logo_url?: string | null
         }
       }
       questions: {
