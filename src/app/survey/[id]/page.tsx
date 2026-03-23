@@ -119,16 +119,39 @@ export default async function PublicSurveyPage({
     <div className="min-h-screen bg-gray-50 py-12 px-6">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className="h-3 bg-gray-900 w-full" />
+          {/* Colored top bar */}
+          <div className="h-2 bg-gray-900 w-full" />
+
           <div className="p-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{survey.title}</h1>
-            {survey.description && (
-              <p className="text-gray-600">{survey.description}</p>
-            )}
-            <div className="mt-4 flex items-center gap-2">
-              <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
-                {survey.category.replace('_', ' ')}
+            {/* Logo + Title row */}
+            <div className="flex items-start gap-5 mb-4">
+              {survey.logo_url && (
+                <img
+                  src={survey.logo_url}
+                  alt="Organization logo"
+                  className="w-16 h-16 object-contain rounded-xl border border-gray-100 bg-gray-50 flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl font-bold text-gray-900 mb-1 leading-tight">
+                  {survey.title}
+                </h1>
+                {survey.description && (
+                  <p className="text-gray-500 text-sm leading-relaxed">{survey.description}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Meta row */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">
+                {survey.category.replace(/_/g, ' ')}
               </span>
+              {survey.time_limit_minutes > 0 && (
+                <span className="px-2 py-1 text-xs font-medium bg-orange-50 text-orange-600 rounded-lg">
+                  ⏱ {survey.time_limit_minutes} min limit
+                </span>
+              )}
             </div>
           </div>
         </div>
