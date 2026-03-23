@@ -64,7 +64,25 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
       let chartData: any[] = []
       let textAnswers: string[] = []
 
-      if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE') {
+      if (q.question_type === 'QUIZ') {
+        const correct = answers.filter((a: any) => a.is_correct === true).length
+        const incorrect = answers.filter((a: any) => a.is_correct === false).length
+        const unanswered = answers.length - correct - incorrect
+        const pct = answers.length > 0 ? Math.round((correct / answers.length) * 100) : 0
+        chartData = [
+          { name: '✓ Correct', value: correct },
+          { name: '✗ Incorrect', value: incorrect },
+          ...(unanswered > 0 ? [{ name: 'No Answer', value: unanswered }] : []),
+        ]
+        // Store extra quiz stats for display
+        return {
+          ...q,
+          chartData,
+          totalResponses: answers.length,
+          textAnswers: [],
+          quizStats: { correct, incorrect, total: answers.length, pct },
+        }
+      } else if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE') {
         const counts: Record<string, number> = {}
         answers.forEach((a: any) => {
           const val = a.answer_value
@@ -177,15 +195,21 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
       ]
       answerableQuestions.forEach((q: any) => {
         const answer = r.answers.find((a: any) => a.question_id === q.id)
-        const val = answer?.answer_value
-        if (val === null || val === undefined) {
-          row.push('')
-        } else if (Array.isArray(val)) {
-          const joined = val.join(', ')
-          row.push(joined.length > 500 ? joined.substring(0, 497) + '...' : joined)
+        if (q.question_type === 'QUIZ') {
+          if (answer?.is_correct === true) row.push('✓ Correct')
+          else if (answer?.is_correct === false) row.push('✗ Incorrect')
+          else row.push('')
         } else {
-          const strVal = String(val)
-          row.push(strVal.length > 500 ? strVal.substring(0, 497) + '...' : strVal)
+          const val = answer?.answer_value
+          if (val === null || val === undefined) {
+            row.push('')
+          } else if (Array.isArray(val)) {
+            const joined = val.join(', ')
+            row.push(joined.length > 500 ? joined.substring(0, 497) + '...' : joined)
+          } else {
+            const strVal = String(val)
+            row.push(strVal.length > 500 ? strVal.substring(0, 497) + '...' : strVal)
+          }
         }
       })
       return row
@@ -219,7 +243,15 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
       )
       statsRows.push(['Total Answers', answers.length])
 
-      if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE' || q.question_type === 'QUIZ') {
+      if (q.question_type === 'QUIZ') {
+        const correct = answers.filter((a: any) => a.is_correct === true).length
+        const incorrect = answers.filter((a: any) => a.is_correct === false).length
+        const pct = answers.length > 0 ? ((correct / answers.length) * 100).toFixed(1) + '%' : '0%'
+        statsRows.push(['Result', 'Count', 'Percentage'])
+        statsRows.push(['✓ Correct', correct, pct])
+        statsRows.push(['✗ Incorrect', incorrect, answers.length > 0 ? ((incorrect / answers.length) * 100).toFixed(1) + '%' : '0%'])
+        statsRows.push(['Score', pct, ''])
+      } else if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE') {
         const counts: Record<string, number> = {}
         answers.forEach((a: any) => {
           const val = a.answer_value
@@ -347,7 +379,24 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
         r.answers.filter((a: any) => a.question_id === q.id)
       )
 
-      if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE' || q.question_type === 'QUIZ') {
+      if (q.question_type === 'QUIZ') {
+        const correct = answers.filter((a: any) => a.is_correct === true).length
+        const incorrect = answers.filter((a: any) => a.is_correct === false).length
+        const pct = answers.length > 0 ? ((correct / answers.length) * 100).toFixed(1) + '%' : '0%'
+        autoTable(doc, {
+          startY: y,
+          head: [['Result', 'Count', '%']],
+          body: [
+            ['✓ Correct', String(correct), pct],
+            ['✗ Incorrect', String(incorrect), answers.length > 0 ? ((incorrect / answers.length) * 100).toFixed(1) + '%' : '0%'],
+            ['Score', pct, ''],
+          ],
+          theme: 'striped',
+          headStyles: { fillColor: [55, 65, 81] },
+          margin: { left: 15, right: 15 },
+        })
+        y = (doc as any).lastAutoTable.finalY + 10
+      } else if (q.question_type === 'SINGLE_CHOICE' || q.question_type === 'MULTIPLE_CHOICE') {
         const counts: Record<string, number> = {}
         answers.forEach((a: any) => {
           const val = a.answer_value
@@ -573,7 +622,37 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
                             <h3 className="text-lg font-bold text-gray-900 mb-2">{stat.question_text}</h3>
                             <p className="text-sm text-gray-500 mb-6">{stat.totalResponses} responses</p>
                             <div className="h-64 w-full">
-                              {stat.chartData.length > 0 ? (
+                              {stat.question_type === 'QUIZ' && stat.quizStats ? (
+                                <div className="h-full flex flex-col items-center justify-center gap-4">
+                                  {/* Big score percentage */}
+                                  <div className="text-center">
+                                    <div className={`text-5xl font-bold ${
+                                      stat.quizStats.pct >= 70 ? 'text-emerald-600' : stat.quizStats.pct >= 40 ? 'text-orange-500' : 'text-red-500'
+                                    }`}>
+                                      {stat.quizStats.pct}%
+                                    </div>
+                                    <div className="text-sm text-gray-500 mt-1">correct answers</div>
+                                  </div>
+                                  {/* Correct / Incorrect breakdown */}
+                                  <div className="flex items-center gap-6 text-sm">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                                      <span className="text-gray-700 font-medium">{stat.quizStats.correct} Correct</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-3 h-3 rounded-full bg-red-400" />
+                                      <span className="text-gray-700 font-medium">{stat.quizStats.incorrect} Incorrect</span>
+                                    </div>
+                                  </div>
+                                  {/* Mini bar */}
+                                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                                    <div
+                                      className="h-3 rounded-full bg-emerald-500 transition-all"
+                                      style={{ width: `${stat.quizStats.pct}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              ) : stat.chartData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
                                   {stat.question_type === 'RATING' ? (
                                     <BarChart data={stat.chartData}>

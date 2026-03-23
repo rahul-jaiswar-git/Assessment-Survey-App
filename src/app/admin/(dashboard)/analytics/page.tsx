@@ -29,7 +29,7 @@ export default async function AnalyticsPage({
 
     const { data: resp } = await supabase
       .from('responses')
-      .select('*, answers(*)')
+      .select('*, answers(id, question_id, answer_value, is_correct, created_at)')
       .eq('survey_id', surveyId)
     
     responses = resp || []
