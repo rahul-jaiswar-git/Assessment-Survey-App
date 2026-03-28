@@ -32,32 +32,27 @@ export default function LandingPage() {
 
       {/* ── Header ── */}
       <header className="w-full bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Left — Canaffor Corp Logo */}
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+
+          {/* Left — Canaffor Corp logo only, no text */}
+          <div className="flex items-center">
             <Image
               src="/canaffor corp logo.png"
-              alt="Canaffor Corp"
-              width={48}
-              height={48}
+              alt="Canaffor Corporation"
+              width={80}
+              height={80}
               className="object-contain"
             />
-            <span className="text-lg font-bold text-gray-900 hidden sm:block">
-              Canaffor Corp
-            </span>
           </div>
 
-          {/* Right — Upskilling logo */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-500 hidden sm:block">
-              Powered by
-            </span>
+          {/* Right — Gurukul logo only, no "Powered by" text */}
+          <div className="flex items-center">
             <Image
               src="/upskilling.jpg"
-              alt="Upskilling"
-              width={120}
-              height={40}
-              className="object-contain rounded-lg"
+              alt="Gurukul"
+              width={80}
+              height={80}
+              className="object-contain rounded-full"
             />
           </div>
         </div>
@@ -119,12 +114,12 @@ export default function LandingPage() {
               <div className="flex items-center gap-3 mb-4">
                 <Image
                   src="/canaffor corp logo.png"
-                  alt="Canaffor Corp"
-                  width={40}
-                  height={40}
+                  alt="Canaffor Corporation"
+                  width={52}
+                  height={52}
                   className="object-contain rounded-lg"
                 />
-                <span className="text-lg font-bold">Canaffor Corp</span>
+                <span className="text-lg font-bold">Canaffor Corporation</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Empowering organizations with intelligent survey and assessment solutions for measurable growth.
@@ -155,26 +150,28 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* Col 3 — Powered by + Admin */}
+            {/* Col 3 — Gurukul + Admin Portal */}
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">
                 Platform
               </h3>
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-3">
                 <Image
                   src="/upskilling.jpg"
-                  alt="Upskilling"
-                  width={100}
-                  height={32}
-                  className="object-contain rounded"
+                  alt="Gurukul"
+                  width={56}
+                  height={56}
+                  className="object-contain rounded-full"
                 />
+                <span className="text-white font-semibold text-base">Gurukul</span>
               </div>
-              <p className="text-gray-400 text-xs mb-4">
-                Developed and maintained by the Upskilling team.
+              <p className="text-gray-400 text-xs mb-6">
+                Developed and maintained by the Gurukul team.
               </p>
+              {/* Admin Portal — bigger, more prominent */}
               <Link
                 href="/admin/login"
-                className="inline-flex items-center gap-2 text-xs text-gray-400 hover:text-white border border-gray-700 hover:border-gray-500 px-3 py-2 rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-gray-700 hover:bg-gray-600 border border-gray-600 hover:border-gray-400 px-5 py-3 rounded-xl transition-all active:scale-95 cursor-pointer"
               >
                 🔒 Admin Portal
               </Link>
@@ -184,10 +181,10 @@ export default function LandingPage() {
           {/* Bottom bar */}
           <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
             <p>
-              © {new Date().getFullYear()} Canaffor Corp. All rights reserved.
+              © {new Date().getFullYear()} Canaffor Corporation. All rights reserved.
             </p>
             <p>
-              Powered by Upskilling · Survey Management Platform
+              Powered by Gurukul · Survey Management Platform
             </p>
           </div>
         </div>
