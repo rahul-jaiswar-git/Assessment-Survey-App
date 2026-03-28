@@ -60,7 +60,7 @@ export default function LandingPage() {
       <main className="flex-1 flex flex-col items-center justify-center p-6 py-16">
         <div className="max-w-5xl w-full text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Survey Management Platform
+            Assessment Center
           </h1>
           <p className="text-xl text-gray-600">
             Select a category to request a custom survey for your organization.
@@ -166,7 +166,7 @@ export default function LandingPage() {
                 className="inline-flex items-center gap-2 text-sm font-bold text-white px-6 py-3 rounded-xl transition-all active:scale-95 cursor-pointer shadow-md hover:shadow-lg hover:opacity-90"
                 style={{ backgroundColor: '#10B981' }}
               >
-                🔒 Admin Portal
+                🔒 Admin Login
               </Link>
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function LandingPage() {
           {/* Bottom bar */}
           <div className="border-t border-gray-400 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
             <p>© {new Date().getFullYear()} Canaffor Corporation. All rights reserved.</p>
-            <p>Powered by Gurukul · Survey Management Platform</p>
+            <p>Powered by Gurukul · Assessment Center</p>
           </div>
         </div>
       </footer>
