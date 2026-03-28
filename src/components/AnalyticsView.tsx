@@ -13,8 +13,11 @@ import {
   PieChart,
   Pie,
   Cell,
+  LineChart,
+  Line,
+  Legend,
 } from 'recharts'
-import { FileSpreadsheet, FileText as FilePdf } from 'lucide-react'
+import { FileSpreadsheet, FileText as FilePdf, Download } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -33,6 +36,34 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
   const [fromDate, setFromDate] = useState<string>('')
   const [toDate, setToDate] = useState<string>('')
   const [activeTextQuestion, setActiveTextQuestion] = useState<any | null>(null)
+  
+  // Chart type state management
+  const [chartTypes, setChartTypes] = useState<Record<string, 'bar' | 'line' | 'pie'>>({})
+  const chartRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  const getChartType = (questionId: string, defaultType: 'bar' | 'pie' = 'pie') => {
+    return chartTypes[questionId] || defaultType
+  }
+
+  const setChartType = (questionId: string, type: 'bar' | 'line' | 'pie') => {
+    setChartTypes(prev => ({ ...prev, [questionId]: type }))
+  }
+
+  // Chart download helper function
+  const downloadChart = async (questionId: string, questionText: string) => {
+    const el = chartRefs.current[questionId]
+    if (!el) return
+    try {
+      const { default: html2canvas } = await import('html2canvas')
+      const canvas = await html2canvas(el, { backgroundColor: '#ffffff', scale: 2 })
+      const link = document.createElement('a')
+      link.download = `${questionText.replace(/[^a-z0-9]/gi, '_').substring(0, 30)}_chart.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    } catch {
+      alert('Could not download chart. Please try again.')
+    }
+  }
 
   const filteredResponses = useMemo(() => {
     if (!responses.length) return []
@@ -310,7 +341,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
     XLSX.writeFile(wb, `${safeTitle}_report.xlsx`)
   }
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     if (!selectedSurvey || !filteredResponses.length) return
 
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
@@ -463,6 +494,31 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
       }
     })
 
+    // ── Chart images in PDF ───────────────────────────────────────
+    if (y > 220) { doc.addPage(); y = 20 }
+    doc.setFontSize(13)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(17, 24, 39)
+    doc.text('CHARTS', 15, y)
+    y += 10
+
+    for (const q of answerableQuestions) {
+      const el = chartRefs.current[q.id]
+      if (!el) continue
+      try {
+        const { default: html2canvas } = await import('html2canvas')
+        const canvas = await html2canvas(el, { backgroundColor: '#ffffff', scale: 1.5 })
+        const imgData = canvas.toDataURL('image/png')
+        const imgW = pageW - 30
+        const imgH = (canvas.height / canvas.width) * imgW
+        if (y + imgH > 270) { doc.addPage(); y = 20 }
+        doc.addImage(imgData, 'PNG', 15, y, imgW, imgH)
+        y += imgH + 8
+      } catch {
+        // skip chart if capture fails
+      }
+    }
+
     // ── Footer with page numbers ──────────────────────────────────
     const pageCount = doc.getNumberOfPages()
     for (let i = 1; i <= pageCount; i++) {
@@ -539,7 +595,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
 
             <button
               type="button"
-              onClick={exportToPDF}
+              onClick={() => exportToPDF()}
               className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
             >
               <FilePdf className="w-4 h-4" />
@@ -618,13 +674,53 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
                         const stat = questionStats.find((s: any) => s.id === q.id)
                         if (!stat) return null
                         return (
-                          <div key={stat.id} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid">
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">{stat.question_text}</h3>
-                            <p className="text-sm text-gray-500 mb-6">{stat.totalResponses} responses</p>
-                            <div className="h-64 w-full">
+                          <div
+                            key={stat.id}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 break-inside-avoid"
+                          >
+                            {/* Question header */}
+                            <h3 className="text-base font-bold text-gray-900 mb-1">{stat.question_text}</h3>
+                            <p className="text-sm text-gray-500 mb-4">{stat.totalResponses} responses</p>
+
+                            {/* Chart type switcher — only for questions with chartData */}
+                            {stat.chartData.length > 0 && stat.question_type !== 'QUIZ' && (
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                                  {(['bar', 'line', 'pie'] as const).map((type) => (
+                                    <button
+                                      key={type}
+                                      type="button"
+                                      onClick={() => setChartType(stat.id, type)}
+                                      className={`px-3 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer capitalize ${
+                                        getChartType(stat.id) === type
+                                          ? 'bg-white text-gray-900 shadow-sm'
+                                          : 'text-gray-500 hover:text-gray-700'
+                                      }`}
+                                    >
+                                      {type === 'bar' ? '▊ Bar' : type === 'line' ? '↗ Line' : '◉ Pie'}
+                                    </button>
+                                  ))}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => downloadChart(stat.id, stat.question_text)}
+                                  title="Download chart as PNG"
+                                  className="flex items-center gap-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                                >
+                                  <Download className="w-3 h-3" />
+                                  PNG
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Chart area */}
+                            <div
+                              className="h-64 w-full"
+                              ref={(el) => { chartRefs.current[stat.id] = el }}
+                            >
                               {stat.question_type === 'QUIZ' && stat.quizStats ? (
+                                /* QUIZ score display — unchanged from current code */
                                 <div className="h-full flex flex-col items-center justify-center gap-4">
-                                  {/* Big score percentage */}
                                   <div className="text-center">
                                     <div className={`text-5xl font-bold ${
                                       stat.quizStats.pct >= 70 ? 'text-emerald-600' : stat.quizStats.pct >= 40 ? 'text-orange-500' : 'text-red-500'
@@ -633,7 +729,6 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
                                     </div>
                                     <div className="text-sm text-gray-500 mt-1">correct answers</div>
                                   </div>
-                                  {/* Correct / Incorrect breakdown */}
                                   <div className="flex items-center gap-6 text-sm">
                                     <div className="flex items-center gap-2">
                                       <div className="w-3 h-3 rounded-full bg-emerald-500" />
@@ -644,46 +739,54 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
                                       <span className="text-gray-700 font-medium">{stat.quizStats.incorrect} Incorrect</span>
                                     </div>
                                   </div>
-                                  {/* Mini bar */}
                                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                                    <div
-                                      className="h-3 rounded-full bg-emerald-500 transition-all"
-                                      style={{ width: `${stat.quizStats.pct}%` }}
-                                    />
+                                    <div className="h-3 rounded-full bg-emerald-500 transition-all" style={{ width: `${stat.quizStats.pct}%` }} />
                                   </div>
                                 </div>
                               ) : stat.chartData.length > 0 ? (
                                 <ResponsiveContainer width="100%" height="100%">
-                                  {stat.question_type === 'RATING' ? (
-                                    <BarChart data={stat.chartData}>
-                                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                      <XAxis dataKey="name" />
-                                      <YAxis allowDecimals={false} />
-                                      <Tooltip />
-                                      <Bar dataKey="value" fill="#111827" radius={[4, 4, 0, 0]} />
-                                    </BarChart>
-                                  ) : (
-                                    <PieChart>
-                                      <Pie
-                                        data={stat.chartData}
-                                        innerRadius={60}
-                                        outerRadius={80}
-                                        paddingAngle={5}
-                                        dataKey="value"
-                                      >
-                                        {stat.chartData.map((_: any, index: number) => (
-                                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                        ))}
-                                      </Pie>
-                                      <Tooltip />
-                                    </PieChart>
-                                  )}
+                                  {(() => {
+                                    const type = getChartType(stat.id, stat.question_type === 'RATING' ? 'bar' : 'pie')
+                                    if (type === 'bar') {
+                                      return (
+                                        <BarChart data={stat.chartData}>
+                                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                                          <Tooltip />
+                                          <Bar dataKey="value" fill="#10B981" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                      )
+                                    } else if (type === 'line') {
+                                      return (
+                                        <LineChart data={stat.chartData}>
+                                          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                                          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+                                          <Tooltip />
+                                          <Legend />
+                                          <Line type="monotone" dataKey="value" stroke="#10B981" strokeWidth={2} dot={{ fill: '#10B981', r: 4 }} />
+                                        </LineChart>
+                                      )
+                                    } else {
+                                      return (
+                                        <PieChart>
+                                          <Pie data={stat.chartData} innerRadius={55} outerRadius={80} paddingAngle={5} dataKey="value">
+                                            {stat.chartData.map((_: any, index: number) => (
+                                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                          </Pie>
+                                          <Tooltip />
+                                          <Legend />
+                                        </PieChart>
+                                      )
+                                    }
+                                  })()}
                                 </ResponsiveContainer>
                               ) : (
                                 <div className="h-full flex flex-col items-center justify-center bg-gray-50 rounded-xl text-sm text-gray-600 p-4">
                                   <p className="text-center">
-                                    This question collects open text responses.
-                                    <br />
+                                    This question collects open text responses.<br />
                                     Use the list below to review what people wrote.
                                   </p>
                                   <button
