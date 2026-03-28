@@ -38,8 +38,8 @@ export default function LandingPage() {
             <Image
               src="/canaffor corp logo.png"
               alt="Canaffor Corporation"
-              width={110}
-              height={110}
+              width={160}
+              height={160}
               className="object-contain"
             />
           </div>
@@ -60,7 +60,7 @@ export default function LandingPage() {
       <main className="flex-1 flex flex-col items-center justify-center p-6 py-16">
         <div className="max-w-5xl w-full text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Assessment Center
+            Survey Management Platform
           </h1>
           <p className="text-xl text-gray-600">
             Select a category to request a custom survey for your organization.
@@ -108,8 +108,8 @@ export default function LandingPage() {
                 <Image
                   src="/canaffor corp logo.png"
                   alt="Canaffor Corporation"
-                  width={60}
-                  height={60}
+                  width={100}
+                  height={100}
                   className="object-contain rounded-lg"
                 />
                 <span className="text-lg font-bold text-gray-900">Canaffor Corporation</span>
@@ -174,7 +174,7 @@ export default function LandingPage() {
           {/* Bottom bar */}
           <div className="border-t border-gray-400 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
             <p>© {new Date().getFullYear()} Canaffor Corporation. All rights reserved.</p>
-            <p>Powered by Gurukul · Assessment Center</p>
+            <p>Powered by Gurukul · Survey Management Platform</p>
           </div>
         </div>
       </footer>
