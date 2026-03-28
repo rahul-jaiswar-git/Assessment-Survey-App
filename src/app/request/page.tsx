@@ -125,18 +125,31 @@ function RequestForm() {
           />
         </div>
 
-        <p className="text-sm font-semibold text-gray-700">Voluntary Disclosure</p>
-        <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <input
-            type="checkbox"
-            id="terms"
-            checked={agreedToTerms}
-            onChange={(e) => setAgreedToTerms(e.target.checked)}
-            className="mt-1 w-4 h-4 accent-gray-900 cursor-pointer"
-          />
-          <label htmlFor="terms" className="text-sm text-gray-600 leading-relaxed">
-            I voluntarily agree to provide my information for the purpose of this survey request. I understand that my details will be used solely to process my request and will not be shared with third parties.
-          </label>
+        <div className="space-y-3">
+          <p className="text-sm font-bold text-gray-800">Voluntary Disclosure</p>
+          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-gray-600 leading-relaxed">
+            <p className="mb-2">
+              Voluntary disclosure refers to the practice of providing information for the purpose of assessment via pre-decided Corporate (Institution, Establishment) Surveys, Employee Surveys or Individual Assessments.
+            </p>
+            <p className="mb-2">
+              It takes two distinct forms: the organization's choice to share results, and the voluntary participation of employees in feedback on pre-decided/approved questionnaires, or by individuals taking assessments on their own.
+            </p>
+            <p>
+              Corporate employees responding to a questionnaire do so voluntarily, understanding that their responses contribute to organizational growth and development.
+            </p>
+          </div>
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={agreedToTerms}
+              onChange={(e) => setAgreedToTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 cursor-pointer accent-emerald-600"
+            />
+            <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed cursor-pointer">
+              I have read and understood the Voluntary Disclosure above. I agree to voluntarily provide my information for the purpose of this survey request.
+            </label>
+          </div>
         </div>
 
         {error && (
@@ -149,7 +162,8 @@ function RequestForm() {
         <button
           type="submit"
           disabled={isSubmitting || !agreedToTerms}
-          className="w-full bg-gray-900 text-white font-semibold py-3 rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+          className="w-full text-white font-semibold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center hover:opacity-90 active:scale-95"
+          style={{ backgroundColor: '#10B981' }}
         >
           {isSubmitting ? (
             <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />

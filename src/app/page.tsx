@@ -5,24 +5,24 @@ import { Factory, Briefcase, GraduationCap } from 'lucide-react'
 const surveyCategories = [
   {
     id: 'INDUSTRIAL',
-    title: 'Company Health Assessment Climate Survey',
-    description: 'Request a survey for industrial operations, manufacturing, or logistics.',
+    title: 'Health Survey Assessment Climate Study',
+    description: 'A structured assessment to evaluate organizational health, workplace climate, and operational effectiveness across industrial and corporate environments.',
     icon: Factory,
-    color: 'bg-blue-500',
+    color: 'bg-[#10B981]',
   },
   {
     id: 'PROFESSIONAL',
-    title: 'Professional Level Assessment Individual Capability Study',
-    description: 'Request a survey for corporate, consulting, or professional services.',
+    title: 'Individual Capability Assessment Potential Study',
+    description: 'An in-depth evaluation of individual professional capabilities, competencies, and growth potential for career development and role alignment.',
     icon: Briefcase,
-    color: 'bg-emerald-500',
+    color: 'bg-[#10B981]',
   },
   {
     id: 'SKILL_ASSESSMENT',
-    title: 'Skill level Assessment Individual Expertise Study',
-    description: 'Request a survey for talent evaluation or educational assessments.',
+    title: 'Skill Assessment Proficiency Study',
+    description: 'A targeted proficiency study to measure skill levels, knowledge depth, and expertise for talent evaluation and learning outcomes.',
     icon: GraduationCap,
-    color: 'bg-purple-500',
+    color: 'bg-[#10B981]',
   },
 ]
 
@@ -33,25 +33,23 @@ export default function LandingPage() {
       {/* ── Header ── */}
       <header className="w-full bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-
-          {/* Left — Canaffor Corp logo only, no text */}
+          {/* Left — Canaffor Corp logo — bigger */}
           <div className="flex items-center">
             <Image
               src="/canaffor corp logo.png"
               alt="Canaffor Corporation"
-              width={80}
-              height={80}
+              width={110}
+              height={110}
               className="object-contain"
             />
           </div>
-
-          {/* Right — Gurukul logo only, no "Powered by" text */}
+          {/* Right — Gurukul logo only */}
           <div className="flex items-center">
             <Image
               src="/upskilling.jpg"
               alt="Gurukul"
-              width={80}
-              height={80}
+              width={90}
+              height={90}
               className="object-contain rounded-full"
             />
           </div>
@@ -62,7 +60,7 @@ export default function LandingPage() {
       <main className="flex-1 flex flex-col items-center justify-center p-6 py-16">
         <div className="max-w-5xl w-full text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Survey Management Platform
+            Assessment Center
           </h1>
           <p className="text-xl text-gray-600">
             Select a category to request a custom survey for your organization.
@@ -80,9 +78,9 @@ export default function LandingPage() {
                 <category.icon className="w-16 h-16 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
               <div className="p-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{category.title}</h2>
-                <p className="text-gray-600 mb-6">{category.description}</p>
-                <div className="flex items-center text-sm font-semibold text-gray-900">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">{category.title}</h2>
+                <p className="text-gray-600 mb-6 text-sm leading-relaxed">{category.description}</p>
+                <div className="flex items-center text-sm font-semibold text-[#10B981]">
                   Request Survey
                   <svg
                     className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
@@ -90,12 +88,7 @@ export default function LandingPage() {
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
@@ -105,7 +98,7 @@ export default function LandingPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="w-full bg-gray-900 text-white mt-auto">
+      <footer className="w-full mt-auto" style={{ backgroundColor: '#BDC3C7' }}>
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
 
@@ -115,36 +108,36 @@ export default function LandingPage() {
                 <Image
                   src="/canaffor corp logo.png"
                   alt="Canaffor Corporation"
-                  width={52}
-                  height={52}
+                  width={60}
+                  height={60}
                   className="object-contain rounded-lg"
                 />
-                <span className="text-lg font-bold">Canaffor Corporation</span>
+                <span className="text-lg font-bold text-gray-900">Canaffor Corporation</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
+              <p className="text-gray-700 text-sm leading-relaxed">
                 Empowering organizations with intelligent survey and assessment solutions for measurable growth.
               </p>
             </div>
 
             {/* Col 2 — Quick Links */}
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-4">
                 Quick Links
               </h3>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <ul className="space-y-3 text-sm text-gray-700">
                 <li>
-                  <Link href="/request?category=INDUSTRIAL" className="hover:text-white transition-colors">
-                    Company Health Assessment
+                  <Link href="/request?category=INDUSTRIAL" className="hover:text-[#10B981] transition-colors font-medium">
+                    Health Survey Assessment Climate Study
                   </Link>
                 </li>
                 <li>
-                  <Link href="/request?category=PROFESSIONAL" className="hover:text-white transition-colors">
-                    Professional Level Assessment
+                  <Link href="/request?category=PROFESSIONAL" className="hover:text-[#10B981] transition-colors font-medium">
+                    Individual Capability Assessment Potential Study
                   </Link>
                 </li>
                 <li>
-                  <Link href="/request?category=SKILL_ASSESSMENT" className="hover:text-white transition-colors">
-                    Skill Level Assessment
+                  <Link href="/request?category=SKILL_ASSESSMENT" className="hover:text-[#10B981] transition-colors font-medium">
+                    Skill Assessment Proficiency Study
                   </Link>
                 </li>
               </ul>
@@ -152,7 +145,7 @@ export default function LandingPage() {
 
             {/* Col 3 — Gurukul + Admin Portal */}
             <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-gray-700 mb-4">
                 Platform
               </h3>
               <div className="flex items-center gap-3 mb-3">
@@ -163,15 +156,15 @@ export default function LandingPage() {
                   height={56}
                   className="object-contain rounded-full"
                 />
-                <span className="text-white font-semibold text-base">Gurukul</span>
+                <span className="text-gray-900 font-semibold text-base">Gurukul</span>
               </div>
-              <p className="text-gray-400 text-xs mb-6">
+              <p className="text-gray-600 text-xs mb-5">
                 Developed and maintained by the Gurukul team.
               </p>
-              {/* Admin Portal — bigger, more prominent */}
               <Link
                 href="/admin/login"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-gray-700 hover:bg-gray-600 border border-gray-600 hover:border-gray-400 px-5 py-3 rounded-xl transition-all active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 text-sm font-bold text-white px-6 py-3 rounded-xl transition-all active:scale-95 cursor-pointer shadow-md hover:shadow-lg hover:opacity-90"
+                style={{ backgroundColor: '#10B981' }}
               >
                 🔒 Admin Portal
               </Link>
@@ -179,13 +172,9 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom bar */}
-          <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-            <p>
-              © {new Date().getFullYear()} Canaffor Corporation. All rights reserved.
-            </p>
-            <p>
-              Powered by Gurukul · Survey Management Platform
-            </p>
+          <div className="border-t border-gray-400 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
+            <p>© {new Date().getFullYear()} Canaffor Corporation. All rights reserved.</p>
+            <p>Powered by Gurukul · Assessment Center</p>
           </div>
         </div>
       </footer>
