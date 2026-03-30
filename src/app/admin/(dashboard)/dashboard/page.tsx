@@ -16,11 +16,6 @@ export default async function DashboardPage() {
     .from('responses')
     .select('*', { count: 'exact', head: true })
 
-  const { data: recentSurveys } = await supabase
-    .from('surveys')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(5)
 
   const { count: publishedCount } = await supabase
     .from('surveys')
@@ -31,6 +26,36 @@ export default async function DashboardPage() {
     .from('surveys')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'DRAFT')
+
+  const { count: industrialCount } = await supabase
+    .from('surveys')
+    .select('*', { count: 'exact', head: true })
+    .eq('category', 'INDUSTRIAL')
+
+  const { count: professionalCount } = await supabase
+    .from('surveys')
+    .select('*', { count: 'exact', head: true })
+    .eq('category', 'PROFESSIONAL')
+
+  const { count: skillCount } = await supabase
+    .from('surveys')
+    .select('*', { count: 'exact', head: true })
+    .eq('category', 'SKILL_ASSESSMENT')
+
+  const { count: industrialResponses } = await supabase
+    .from('responses')
+    .select('*, surveys!inner(category)', { count: 'exact', head: true })
+    .eq('surveys.category', 'INDUSTRIAL')
+
+  const { count: professionalResponses } = await supabase
+    .from('responses')
+    .select('*, surveys!inner(category)', { count: 'exact', head: true })
+    .eq('surveys.category', 'PROFESSIONAL')
+
+  const { count: skillResponses } = await supabase
+    .from('responses')
+    .select('*, surveys!inner(category)', { count: 'exact', head: true })
+    .eq('surveys.category', 'SKILL_ASSESSMENT')
 
   const stats = [
     {
@@ -87,26 +112,62 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Category-wise breakdown */}
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Recent Surveys</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Surveys by Category</h2>
           <div className="space-y-4">
-            {recentSurveys && recentSurveys.length > 0 ? (
-              recentSurveys.map((survey) => (
-                <div key={survey.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div>
-                    <p className="font-semibold text-gray-900">{survey.title}</p>
-                    <p className="text-sm text-gray-500 capitalize">{survey.category.toLowerCase().replace('_', ' ')}</p>
-                  </div>
-                  <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                    survey.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-700'
-                  }`}>
-                    {survey.status}
-                  </span>
+
+            {/* Institution / Corporate / Establishment */}
+            <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-600" />
                 </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center py-4">No surveys created yet.</p>
-            )}
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">Institution / Corporate / Establishment</p>
+                  <p className="text-xs text-gray-500">Health Survey Assessment Climate Study</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-gray-900">{industrialCount || 0}</p>
+                <p className="text-xs text-gray-500">surveys</p>
+              </div>
+            </div>
+
+            {/* Individual Professional */}
+            <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">Individual Professional</p>
+                  <p className="text-xs text-gray-500">Individual Capability Assessment Potential Study</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-gray-900">{professionalCount || 0}</p>
+                <p className="text-xs text-gray-500">surveys</p>
+              </div>
+            </div>
+
+            {/* Skills */}
+            <div className="flex items-center justify-between p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900 text-sm">Skills</p>
+                  <p className="text-xs text-gray-500">Skill Assessment Proficiency Study</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-gray-900">{skillCount || 0}</p>
+                <p className="text-xs text-gray-500">surveys</p>
+              </div>
+            </div>
+
           </div>
         </div>
 
