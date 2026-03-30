@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 import { Send, CheckCircle, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
 
 function RequestForm() {
   const searchParams = useSearchParams()
@@ -174,6 +175,25 @@ function RequestForm() {
             </>
           )}
         </button>
+
+      {/* UPI Payment QR Code */}
+      <div className="mt-6 pt-6 border-t border-gray-100">
+        <p className="text-sm font-bold text-gray-800 mb-1 text-center">Payment</p>
+        <p className="text-xs text-gray-500 text-center mb-4">
+          Scan the QR code below to complete your payment via UPI
+        </p>
+        <div className="flex justify-center">
+          <div className="border border-gray-200 rounded-2xl p-3 bg-white shadow-sm inline-block">
+            <Image
+              src="/IMG-20260330-WA0014.jpg"
+              alt="UPI Payment QR Code"
+              width={200}
+              height={200}
+              className="rounded-xl object-contain"
+            />
+          </div>
+        </div>
+      </div>
       </form>
     </div>
   )
