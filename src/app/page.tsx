@@ -67,8 +67,8 @@ export default function LandingPage() {
       </header>
 
       {/* ── Main content ── */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6 py-16">
-        <div className="max-w-5xl w-full text-center mb-12">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 py-8">
+        <div className="max-w-5xl w-full text-center mb-6">
           <h1 className="text-2xl md:text-3xl font-semibold text-gray-500 mb-4 tracking-wide uppercase">
             Assessment Center
           </h1>
@@ -77,17 +77,17 @@ export default function LandingPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl w-full">
           {surveyCategories.map((category) => (
             <Link
               key={category.id}
               href={`/request?category=${category.id}`}
               className="group relative bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2"
             >
-              <div className={`h-32 ${category.color} flex items-center justify-center`}>
-                <category.icon className="w-16 h-16 text-white group-hover:scale-110 transition-transform duration-300" />
+              <div className={`h-20 ${category.color} flex items-center justify-center`}>
+                <category.icon className="w-10 h-10 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
-              <div className="p-8">
+              <div className="p-5">
                 <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#10B981] mb-2">
                   {category.tag}
                 </span>
@@ -179,7 +179,7 @@ export default function LandingPage() {
 
           {/* Bottom bar */}
           <div className="border-t border-gray-400 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
-            <p>© {new Date().getFullYear()} Canaffor Corporation. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Canaffor Corporation. All copy rights reserved.</p>
             <p>Powered by Gurukul · Assessment Center</p>
           </div>
         </div>
