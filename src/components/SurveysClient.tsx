@@ -60,10 +60,10 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
   const shown = filteredSurveys.length
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-5">
+      <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Surveys</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Surveys</h1>
           <p className="text-gray-600">Manage and track your surveys.</p>
         </div>
         <Link
@@ -157,13 +157,13 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <th className="px-6 py-4">#</th>
-                <th className="px-6 py-4">Title</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Start Date</th>
-                <th className="px-6 py-4">End Date</th>
-                <th className="px-6 py-4">Responses</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+                <th className="px-3 py-3">#</th>
+                <th className="px-3 py-3">Title</th>
+                <th className="px-3 py-3">Category</th>
+                <th className="px-3 py-3">Start Date</th>
+                <th className="px-3 py-3">End Date</th>
+                <th className="px-3 py-3">Responses</th>
+                <th className="px-3 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -171,28 +171,28 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
                 filteredSurveys.length > 0 ? (
                   filteredSurveys.map((survey, index) => (
                     <tr key={survey.id} className="hover:bg-gray-50 transition-colors group">
-                      <td className="px-6 py-4 text-sm text-gray-500 font-medium">{index + 1}</td>
-                      <td className="px-6 py-4">
-                        <div className="font-semibold text-gray-900">{survey.title}</div>
+                      <td className="px-3 py-2 text-sm text-gray-500 font-medium">{index + 1}</td>
+                      <td className="px-3 py-2">
+                        <div className="font-semibold text-gray-900 text-sm">{survey.title}</div>
                         <div className="text-xs text-gray-500">
                           Created on {new Date(survey.created_at).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 py-2">
                         <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-md">
                           {survey.category.replace('_', ' ')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-3 py-2 text-sm text-gray-600">
                         {survey.starts_at ? formatDateTime(survey.starts_at) : <span className="text-gray-400">—</span>}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-3 py-2 text-sm text-gray-600">
                         {survey.ends_at ? formatDateTime(survey.ends_at) : <span className="text-gray-400">—</span>}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
+                      <td className="px-3 py-2 text-sm text-gray-600">
                         {survey.responses?.[0]?.count || 0}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-3 py-2 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <SurveyActions id={survey.id} status={survey.status} />
                         </div>
@@ -201,7 +201,7 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                       No surveys match your filters.{' '}
                       <button
                         type="button"
@@ -215,7 +215,7 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
                 )
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                     No surveys found. Click &quot;New Survey&quot; to get started.
                   </td>
                 </tr>
