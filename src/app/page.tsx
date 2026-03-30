@@ -5,6 +5,7 @@ import { Factory, Briefcase, GraduationCap } from 'lucide-react'
 const surveyCategories = [
   {
     id: 'INDUSTRIAL',
+    tag: 'Institution / Corporate / Establishment',
     title: 'Health Survey Assessment Climate Study',
     description: 'A structured assessment to evaluate organizational health, workplace climate, and operational effectiveness across industrial and corporate environments.',
     icon: Factory,
@@ -12,6 +13,7 @@ const surveyCategories = [
   },
   {
     id: 'PROFESSIONAL',
+    tag: 'Individual Professional',
     title: 'Individual Capability Assessment Potential Study',
     description: 'An in-depth evaluation of individual professional capabilities, competencies, and growth potential for career development and role alignment.',
     icon: Briefcase,
@@ -19,6 +21,7 @@ const surveyCategories = [
   },
   {
     id: 'SKILL_ASSESSMENT',
+    tag: 'Skills',
     title: 'Skill Assessment Proficiency Study',
     description: 'A targeted proficiency study to measure skill levels, knowledge depth, and expertise for talent evaluation and learning outcomes.',
     icon: GraduationCap,
@@ -31,27 +34,34 @@ export default function LandingPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
 
       {/* ── Header ── */}
-      <header className="w-full bg-white border-b border-gray-100 shadow-sm">
+      <header className="w-full border-b border-gray-300 shadow-sm" style={{ backgroundColor: '#BDC3C7' }}>
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
           {/* Left — Canaffor Corp logo — bigger */}
           <div className="flex items-center">
-            <Image
-              src="/canaffor corp logo.png"
-              alt="Canaffor Corporation"
-              width={160}
-              height={160}
-              className="object-contain"
-            />
+              <Image
+                src="/canaffor corp logo.png"
+                alt="Canaffor Corporation"
+                width={200}
+                height={200}
+                className="object-contain"
+              />
           </div>
-          {/* Right — Gurukul logo only */}
-          <div className="flex items-center">
+          {/* Right — Gurukul logo + Admin Login button */}
+          <div className="flex items-center gap-4">
             <Image
               src="/upskilling.jpg"
               alt="Gurukul"
-              width={90}
-              height={90}
+              width={130}
+              height={130}
               className="object-contain rounded-full"
             />
+            <Link
+              href="/admin/login"
+              className="inline-flex items-center gap-2 text-sm font-bold text-white px-5 py-2.5 rounded-xl transition-all active:scale-95 cursor-pointer shadow-md hover:shadow-lg hover:opacity-90 whitespace-nowrap"
+              style={{ backgroundColor: '#10B981' }}
+            >
+              🔒 Admin Login
+            </Link>
           </div>
         </div>
       </header>
@@ -59,7 +69,7 @@ export default function LandingPage() {
       {/* ── Main content ── */}
       <main className="flex-1 flex flex-col items-center justify-center p-6 py-16">
         <div className="max-w-5xl w-full text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl md:text-3xl font-semibold text-gray-500 mb-4 tracking-wide uppercase">
             Assessment Center
           </h1>
           <p className="text-xl text-gray-600">
@@ -78,6 +88,9 @@ export default function LandingPage() {
                 <category.icon className="w-16 h-16 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
               <div className="p-8">
+                <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#10B981] mb-2">
+                  {category.tag}
+                </span>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">{category.title}</h2>
                 <p className="text-gray-600 mb-6 text-sm leading-relaxed">{category.description}</p>
                 <div className="flex items-center text-sm font-semibold text-[#10B981]">
@@ -161,13 +174,6 @@ export default function LandingPage() {
               <p className="text-gray-600 text-xs mb-5">
                 Developed and maintained by the Gurukul team.
               </p>
-              <Link
-                href="/admin/login"
-                className="inline-flex items-center gap-2 text-sm font-bold text-white px-6 py-3 rounded-xl transition-all active:scale-95 cursor-pointer shadow-md hover:shadow-lg hover:opacity-90"
-                style={{ backgroundColor: '#10B981' }}
-              >
-                🔒 Admin Login
-              </Link>
             </div>
           </div>
 
