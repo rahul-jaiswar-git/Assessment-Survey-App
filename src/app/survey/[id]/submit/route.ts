@@ -48,15 +48,18 @@ export async function POST(
       )
     }
 
-    const now = new Date()
-    if (survey.ends_at && new Date(survey.ends_at) < now) {
+    const nowForCheck = new Date()
+    const padC = (n: number) => String(n).padStart(2, '0')
+    const nowISO = `${nowForCheck.getFullYear()}-${padC(nowForCheck.getMonth()+1)}-${padC(nowForCheck.getDate())}T${padC(nowForCheck.getHours())}:${padC(nowForCheck.getMinutes())}:${padC(nowForCheck.getSeconds())}`
+
+    if (survey.ends_at && survey.ends_at < nowISO) {
       return NextResponse.json(
         { error: 'This survey has closed. Your response could not be submitted.' },
         { status: 403 }
       )
     }
 
-    if (survey.starts_at && new Date(survey.starts_at) > now) {
+    if (survey.starts_at && survey.starts_at > nowISO) {
       return NextResponse.json(
         { error: 'This survey is not yet open.' },
         { status: 403 }
