@@ -136,9 +136,12 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
     if (h !== 12) h += 12
   }
   const [year, month, day] = date.split('-').map(Number)
-  // Store using UTC so what admin types is exactly what gets saved and displayed
-  const iso = new Date(Date.UTC(year, month - 1, day, h, m, 0)).toISOString()
-  return iso
+  // Store as plain local wall-clock string, no timezone conversion
+  const MM = String(month).padStart(2, '0')
+  const DD = String(day).padStart(2, '0')
+  const hh = String(h).padStart(2, '0')
+  const mm = String(m).padStart(2, '0')
+  return `${year}-${MM}-${DD}T${hh}:${mm}:00`
 }
 
   const addQuestion = () => {
