@@ -1,11 +1,15 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { Suspense } from 'react'
 
 function GoBackButtonInner() {
   const router = useRouter()
+  const pathname = usePathname()
+
+  // Don't show on the main homepage
+  if (pathname === '/') return null
 
   const handleClick = () => {
     if (window.history.length > 1) {
