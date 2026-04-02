@@ -162,8 +162,8 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
                 <th className="px-3 py-3 w-28">Category</th>
                 <th className="px-3 py-3 w-36">Start Date</th>
                 <th className="px-3 py-3 w-36">End Date</th>
-                <th className="px-3 py-3 w-20">Responses</th>
-                <th className="px-3 py-3 text-right w-56">Actions</th>
+                <th className="px-3 py-3 w-14">Rspn</th>
+                <th className="px-3 py-3 text-center w-56">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
