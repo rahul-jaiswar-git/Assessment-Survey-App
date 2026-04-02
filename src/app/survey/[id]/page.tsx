@@ -70,15 +70,11 @@ export default async function PublicSurveyPage({
     }
   }
 
-  // Build a "now" string in the same wall-clock format as the stored dates.
-  // Stored dates look like: "2026-04-02T11:30:00" (no Z, local wall time stored as UTC).
-  // We reconstruct "now" as a local wall-clock ISO string to match.
-  const nowReal = new Date()
-  const pad = (n: number) => String(n).padStart(2, '0')
-  const nowLocalISO = `${nowReal.getFullYear()}-${pad(nowReal.getMonth()+1)}-${pad(nowReal.getDate())}T${pad(nowReal.getHours())}:${pad(nowReal.getMinutes())}:${pad(nowReal.getSeconds())}`
+  // DB stores TIMESTAMPTZ in UTC. Compare with real UTC now — straightforward.
+  const now = new Date()
 
   if (!isAdminPreview) {
-    if (survey.starts_at && survey.starts_at > nowLocalISO) {
+    if (survey.starts_at && new Date(survey.starts_at) > now) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
@@ -89,7 +85,7 @@ export default async function PublicSurveyPage({
       )
     }
   
-    if (survey.ends_at && survey.ends_at < nowLocalISO) {
+    if (survey.ends_at && new Date(survey.ends_at) < now) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
           <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
