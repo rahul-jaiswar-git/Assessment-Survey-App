@@ -106,13 +106,21 @@ export default function EditSurveyPage() {
   const toLocalInputValue = (isoString: string) => {
     if (!isoString) return { date: '', hour: '08', minute: '00', ampm: 'AM' as 'AM' | 'PM' }
     const d = new Date(isoString)
-    const year = d.getUTCFullYear()
-    const month = String(d.getUTCMonth() + 1).padStart(2, '0')
-    const day = String(d.getUTCDate()).padStart(2, '0')
-    let hours = d.getUTCHours()
-    const minutes = String(d.getUTCMinutes()).padStart(2, '0')
+    if (isNaN(d.getTime())) return { date: '', hour: '08', minute: '00', ampm: 'AM' as 'AM' | 'PM' }
+
+    // Convert UTC from DB to IST for display
+    const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000
+    const ist = new Date(d.getTime() + IST_OFFSET_MS)
+
+    const year = ist.getUTCFullYear()
+    const month = String(ist.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(ist.getUTCDate()).padStart(2, '0')
+
+    let hours = ist.getUTCHours()
+    const minutes = String(ist.getUTCMinutes()).padStart(2, '0')
     const ampm: 'AM' | 'PM' = hours >= 12 ? 'PM' : 'AM'
     hours = hours % 12 || 12
+
     return {
       date: `${year}-${month}-${day}`,
       hour: String(hours).padStart(2, '0'),
@@ -131,12 +139,12 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
     if (h !== 12) h += 12
   }
   const [year, month, day] = date.split('-').map(Number)
-  // Store as plain local wall-clock string, no timezone conversion
-  const MM = String(month).padStart(2, '0')
-  const DD = String(day).padStart(2, '0')
-  const hh = String(h).padStart(2, '0')
-  const mm = String(m).padStart(2, '0')
-  return `${year}-${MM}-${DD}T${hh}:${mm}:00`
+  // Admin types time in IST (UTC+5:30). Convert to UTC for TIMESTAMPTZ storage.
+  // Subtract 5h 30m = 330 minutes from the local IST time.
+  const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000
+  const istMs = Date.UTC(year, month - 1, day, h, m, 0)
+  const utcMs = istMs - IST_OFFSET_MS
+  return new Date(utcMs).toISOString()
 }
 
   useEffect(() => {

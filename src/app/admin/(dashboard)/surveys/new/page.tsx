@@ -110,13 +110,21 @@ export default function NewSurveyPage() {
   const toLocalInputValue = (isoString: string): { date: string, time: string, ampm: 'AM' | 'PM', hour: string, minute: string } => {
     if (!isoString) return { date: '', time: '', ampm: 'AM', hour: '', minute: '' }
     const d = new Date(isoString)
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    const hours24 = d.getHours()
-    const minutes = String(d.getMinutes()).padStart(2, '0')
-    const ampm = hours24 >= 12 ? 'PM' : 'AM'
-    const hours12 = hours24 % 12 || 12
+    if (isNaN(d.getTime())) return { date: '', time: '', ampm: 'AM', hour: '', minute: '' }
+
+    // Convert UTC from DB to IST for display
+    const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000
+    const ist = new Date(d.getTime() + IST_OFFSET_MS)
+
+    const year = ist.getUTCFullYear()
+    const month = String(ist.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(ist.getUTCDate()).padStart(2, '0')
+
+    let hours = ist.getUTCHours()
+    const minutes = String(ist.getUTCMinutes()).padStart(2, '0')
+    const ampm: 'AM' | 'PM' = hours >= 12 ? 'PM' : 'AM'
+    const hours12 = hours % 12 || 12
+
     return {
       date: `${year}-${month}-${day}`,
       time: `${String(hours12).padStart(2, '0')}:${minutes}`,
@@ -136,12 +144,12 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
     if (h !== 12) h += 12
   }
   const [year, month, day] = date.split('-').map(Number)
-  // Store as plain local wall-clock string, no timezone conversion
-  const MM = String(month).padStart(2, '0')
-  const DD = String(day).padStart(2, '0')
-  const hh = String(h).padStart(2, '0')
-  const mm = String(m).padStart(2, '0')
-  return `${year}-${MM}-${DD}T${hh}:${mm}:00`
+  // Admin types time in IST (UTC+5:30). Convert to UTC for TIMESTAMPTZ storage.
+  // Subtract 5h 30m = 330 minutes from the local IST time.
+  const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000
+  const istMs = Date.UTC(year, month - 1, day, h, m, 0)
+  const utcMs = istMs - IST_OFFSET_MS
+  return new Date(utcMs).toISOString()
 }
 
   const addQuestion = () => {
