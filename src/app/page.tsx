@@ -46,7 +46,7 @@ export default function LandingPage() {
                 className="object-contain"
               />
           </div>
-          {/* Right — Gurukul logo + Admin Login button */}
+          {/* Right — Gurukul logo */}
           <div className="flex items-center gap-4">
             <Image
               src="/upskilling.jpg"
@@ -55,13 +55,6 @@ export default function LandingPage() {
               height={130}
               className="object-contain rounded-full"
             />
-            <Link
-              href="/admin/login"
-              className="inline-flex items-center gap-2 text-sm font-bold text-white px-5 py-2.5 rounded-xl transition-all active:scale-95 cursor-pointer shadow-md hover:shadow-lg hover:opacity-90 whitespace-nowrap"
-              style={{ backgroundColor: '#10B981' }}
-            >
-              🔒 Admin Login
-            </Link>
           </div>
         </div>
       </header>
