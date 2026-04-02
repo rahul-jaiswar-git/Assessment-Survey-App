@@ -73,7 +73,7 @@ export default function LandingPage() {
             Assessment Center
           </h1>
           <p className="text-xl text-gray-600">
-            Select a category to request a custom survey for your organization.
+            Choose your preferred Assessment.
           </p>
         </div>
 
@@ -88,9 +88,9 @@ export default function LandingPage() {
                 <category.icon className="w-10 h-10 text-white group-hover:scale-110 transition-transform duration-300" />
               </div>
               <div className="p-5">
-                <span className="inline-block text-xs font-bold uppercase tracking-widest text-[#10B981] mb-2">
+                <div className="inline-block bg-[#10B981] text-white text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3">
                   {category.tag}
-                </span>
+                </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">{category.title}</h2>
                 <p className="text-gray-600 mb-6 text-sm leading-relaxed">{category.description}</p>
                 <div className="flex items-center text-sm font-semibold text-[#10B981]">
@@ -169,9 +169,18 @@ export default function LandingPage() {
                   height={56}
                   className="object-contain rounded-full"
                 />
-                <span className="text-gray-900 font-semibold text-base">Gurukul</span>
+                <div>
+                  <span className="text-gray-900 font-semibold text-base block">Gurukul</span>
+                  <Link
+                    href="/admin/login"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white px-3 py-1.5 rounded-lg transition-all active:scale-95 cursor-pointer shadow-sm hover:opacity-90 mt-1"
+                    style={{ backgroundColor: '#10B981' }}
+                  >
+                    🔒 Admin Login
+                  </Link>
+                </div>
               </div>
-              <p className="text-gray-600 text-xs mb-5">
+              <p className="text-gray-600 text-xs">
                 Developed and maintained by the Gurukul team.
               </p>
             </div>
@@ -180,7 +189,7 @@ export default function LandingPage() {
           {/* Bottom bar */}
           <div className="border-t border-gray-400 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
             <p>© {new Date().getFullYear()} Canaffor Corporation. All copy rights reserved.</p>
-            <p>Powered by Gurukul · Assessment Center</p>
+            <p>Powered by Gurukul</p>
           </div>
         </div>
       </footer>
