@@ -8,7 +8,6 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [isDuplicating, startDuplicateTransition] = useTransition()
-  const [copied, setCopied] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
 
@@ -45,13 +44,6 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
     })
   }
 
-  const copyLink = () => {
-    const url = `${window.location.origin}/survey/${id}`
-    navigator.clipboard.writeText(url)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
   const duplicateSurvey = () => {
     startDuplicateTransition(async () => {
       const form = new FormData()
@@ -64,35 +56,36 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
   return (
     <div className="flex items-center gap-1.5">
 
-      {/* Review — icon + text, always visible */}
+      {/* Review */}
       <button
         type="button"
         onClick={() => router.push(`/admin/surveys/${id}/review`)}
         title="Review Survey"
-        className="px-2.5 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center gap-1 transition-colors cursor-pointer active:scale-95 select-none"
+        className="px-2 py-1 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none min-w-[40px]"
       >
         <Eye className="w-3.5 h-3.5" />
-        Review
+        <span className="text-[10px] leading-none">Review</span>
       </button>
 
-      {/* Duplicate — icon only */}
+      {/* Duplicate */}
       <button
         type="button"
         onClick={duplicateSurvey}
         disabled={isDuplicating}
         title="Duplicate Survey"
-        className="p-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex items-center transition-colors cursor-pointer active:scale-95 select-none disabled:opacity-50"
+        className="px-2 py-1 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none disabled:opacity-50 min-w-[40px]"
       >
         <Copy className="w-3.5 h-3.5" />
+        <span className="text-[10px] leading-none">Copy</span>
       </button>
 
-      {/* Survey ON/OFF — compact with dot */}
+      {/* Survey ON/OFF */}
       <button
         type="button"
         onClick={togglePublish}
         disabled={isPending}
         title={status === 'PUBLISHED' ? 'Survey is ON — click to turn OFF' : 'Survey is OFF — click to turn ON'}
-        className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1.5 transition-colors disabled:opacity-50 cursor-pointer active:scale-95 select-none whitespace-nowrap ${
+        className={`px-2 py-1 text-xs font-semibold rounded-lg border flex flex-col items-center gap-0.5 transition-colors disabled:opacity-50 cursor-pointer active:scale-95 select-none min-w-[40px] ${
           status === 'PUBLISHED'
             ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
             : 'border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100'
@@ -101,30 +94,19 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
         <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
           status === 'PUBLISHED' ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'
         }`} />
-        {isPending ? '...' : status === 'PUBLISHED' ? 'ON' : 'OFF'}
+        <span className="text-[10px] leading-none">{isPending ? '...' : status === 'PUBLISHED' ? 'ON' : 'OFF'}</span>
       </button>
 
-      {/* Copy Link — icon only */}
-      <button
-        type="button"
-        onClick={copyLink}
-        title="Copy Survey Link"
-        className={`p-1.5 rounded-lg border flex items-center transition-colors cursor-pointer active:scale-95 select-none ${
-          copied ? 'border-green-200 text-green-600 bg-green-50' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-        }`}
-      >
-        {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-      </button>
-
-      {/* Share — icon only with dropdown */}
+      {/* Share */}
       <div className="relative">
         <button
           type="button"
           onClick={() => setShowShare(!showShare)}
           title="Share Survey"
-          className="p-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex items-center transition-colors cursor-pointer active:scale-95 select-none"
+          className="px-2 py-1 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none min-w-[40px]"
         >
           <Share2 className="w-3.5 h-3.5" />
+          <span className="text-[10px] leading-none">Share</span>
         </button>
 
         {showShare && (

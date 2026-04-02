@@ -158,12 +158,12 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
             <thead>
               <tr className="bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <th className="px-3 py-3 w-8">#</th>
-                <th className="px-3 py-3">Title</th>
-                <th className="px-3 py-3 w-28">Category</th>
+                <th className="px-3 py-3 max-w-[180px]">Title</th>
+                <th className="px-3 py-3 w-24">Category</th>
                 <th className="px-3 py-3 w-36">Start Date</th>
                 <th className="px-3 py-3 w-36">End Date</th>
                 <th className="px-3 py-3 w-14">Rspn</th>
-                <th className="px-3 py-3 text-center w-56">Actions</th>
+                <th className="px-3 py-3 text-center w-48">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -172,8 +172,8 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
                   filteredSurveys.map((survey, index) => (
                     <tr key={survey.id} className="hover:bg-gray-50 transition-colors group">
                       <td className="px-3 py-1.5 text-sm text-gray-500 font-medium">{index + 1}</td>
-                      <td className="px-3 py-1.5">
-                        <div className="font-semibold text-gray-900 text-sm">{survey.title}</div>
+                      <td className="px-3 py-1.5 max-w-[180px]">
+                        <div className="font-semibold text-gray-900 text-sm truncate" title={survey.title}>{survey.title}</div>
                         <div className="text-xs text-gray-400 mt-0.5">
                           {new Date(survey.created_at).toLocaleDateString()}
                         </div>
