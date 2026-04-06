@@ -175,10 +175,7 @@ export default async function DashboardPage() {
           <div className="bg-gray-100 p-4 rounded-full mb-4">
             <FileText className="w-8 h-8 text-gray-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Create New Survey</h2>
-          <p className="text-gray-500 mb-6 max-w-xs">
-            Ready to collect some data? Start by creating a new survey structure.
-          </p>
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Create New Survey</h2>
           <Link
             href="/admin/surveys/new"
             className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors"
