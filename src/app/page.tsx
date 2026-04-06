@@ -41,9 +41,9 @@ export default function LandingPage() {
               <Image
                 src="/canaffor corp logo.png"
                 alt="Canaffor Corporation"
-                width={120}
-                height={60}
-                className="object-contain h-12"
+                width={200}
+                height={64}
+                className="object-contain h-16 w-auto"
               />
           </div>
           {/* Right — Gurukul logo */}
@@ -51,9 +51,9 @@ export default function LandingPage() {
             <Image
               src="/upskilling.jpg"
               alt="Gurukul"
-              width={60}
-              height={60}
-              className="object-contain rounded-full h-12 w-12"
+              width={64}
+              height={64}
+              className="object-contain rounded-full h-16 w-16"
             />
           </div>
         </div>
