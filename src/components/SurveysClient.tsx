@@ -154,22 +154,22 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full text-left text-sm table-fixed">
             <thead>
               <tr className="bg-gray-50/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                <th className="px-2 py-3 w-6">#</th>
-                <th className="px-2 py-3 w-36">Title</th>
-                <th className="px-2 py-3 w-24">Category</th>
-                <th className="px-2 py-3 w-32">Start Date</th>
-                <th className="px-2 py-3 w-32">End Date</th>
-                <th className="px-1 py-3 w-10">Rspn</th>
-                <th className="px-1 py-3 text-center w-72">
+                <th className="px-3 py-3 w-[4%]">#</th>
+                <th className="px-3 py-3 w-[20%]">Title</th>
+                <th className="px-3 py-3 w-[13%]">Category</th>
+                <th className="px-3 py-3 w-[15%]">Start Date</th>
+                <th className="px-3 py-3 w-[15%]">End Date</th>
+                <th className="px-3 py-3 w-[5%]">Rspn</th>
+                <th className="px-3 py-3 text-center w-[28%]">
                   <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Actions</div>
-                  <div className="flex items-center justify-end gap-3 text-[10px] font-normal normal-case tracking-normal text-gray-400 pr-1">
-                    <span className="w-12 text-center">Review</span>
-                    <span className="w-12 text-center">Dupe</span>
-                    <span className="w-12 text-center">Status</span>
-                    <span className="w-12 text-center">Share</span>
+                  <div className="flex items-center justify-end gap-3 text-[10px] font-normal normal-case tracking-normal text-gray-400 pr-2">
+                    <span className="w-14 text-center">Review</span>
+                    <span className="w-14 text-center">Dupe</span>
+                    <span className="w-14 text-center">Status</span>
+                    <span className="w-14 text-center">Share</span>
                   </div>
                 </th>
               </tr>
@@ -179,29 +179,29 @@ export default function SurveysClient({ surveys }: { surveys: any[] }) {
                 filteredSurveys.length > 0 ? (
                   filteredSurveys.map((survey, index) => (
                     <tr key={survey.id} className="hover:bg-gray-50 transition-colors group">
-                      <td className="px-2 py-1.5 text-sm text-gray-500 font-medium">{index + 1}</td>
-                      <td className="px-2 py-1.5 w-36">
+                      <td className="px-3 py-2 text-sm text-gray-500 font-medium">{index + 1}</td>
+                      <td className="px-3 py-2 w-36">
                         <div className="font-semibold text-gray-900 text-sm leading-snug">{survey.title}</div>
                         <div className="text-xs text-gray-400 mt-0.5">
                           {new Date(survey.created_at).toLocaleDateString()}
                         </div>
                       </td>
-                      <td className="px-2 py-1.5">
+                      <td className="px-3 py-2">
                         <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 rounded">
                           {survey.category.replace(/_/g, ' ')}
                         </span>
                       </td>
-                      <td className="px-2 py-1.5 text-sm text-gray-600">
+                      <td className="px-3 py-2 text-sm text-gray-600">
                         {survey.starts_at ? formatDateTime(survey.starts_at) : <span className="text-gray-400">—</span>}
                       </td>
-                      <td className="px-2 py-1.5 text-sm text-gray-600">
+                      <td className="px-3 py-2 text-sm text-gray-600">
                         {survey.ends_at ? formatDateTime(survey.ends_at) : <span className="text-gray-400">—</span>}
                       </td>
-                      <td className="px-1 py-1.5 text-sm text-gray-600">
+                      <td className="px-3 py-2 text-sm text-gray-600">
                         {survey.responses?.[0]?.count || 0}
                       </td>
-                      <td className="px-1 py-1.5 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-3 py-2 text-right">
+                        <div className="flex items-center justify-end gap-3">
                           <SurveyActions id={survey.id} status={survey.status} />
                         </div>
                       </td>
