@@ -511,9 +511,19 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
         const imgData = canvas.toDataURL('image/png')
         const imgW = pageW - 30
         const imgH = (canvas.height / canvas.width) * imgW
-        if (y + imgH > 270) { doc.addPage(); y = 20 }
+        const totalBlockH = 14 + imgH + 10
+        if (y + totalBlockH > 270) { doc.addPage(); y = 20 }
+
+        const qIdx = answerableQuestions.indexOf(q)
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(17, 24, 39)
+        const chartQLines = doc.splitTextToSize(`Q${qIdx + 1}. ${q.question_text}`, imgW)
+        doc.text(chartQLines, 15, y)
+        y += chartQLines.length * 5 + 3
+
         doc.addImage(imgData, 'PNG', 15, y, imgW, imgH)
-        y += imgH + 8
+        y += imgH + 12
       } catch {
         // skip chart if capture fails
       }

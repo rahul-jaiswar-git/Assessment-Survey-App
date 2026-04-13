@@ -54,14 +54,14 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
   }
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-2.5">
 
       {/* Review */}
       <button
         type="button"
         onClick={() => router.push(`/admin/surveys/${id}/review`)}
         title="Review Survey"
-        className="px-2 py-1 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none min-w-[40px]"
+        className="px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none min-w-[48px]"
       >
         <Eye className="w-3.5 h-3.5" />
         <span className="text-[10px] leading-none">Review</span>
@@ -73,7 +73,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
         onClick={duplicateSurvey}
         disabled={isDuplicating}
         title="Duplicate Survey"
-        className="px-2 py-1 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none disabled:opacity-50 min-w-[40px]"
+        className="px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none disabled:opacity-50 min-w-[48px]"
       >
         <Copy className="w-3.5 h-3.5" />
         <span className="text-[10px] leading-none">Copy</span>
@@ -85,7 +85,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
         onClick={togglePublish}
         disabled={isPending}
         title={status === 'PUBLISHED' ? 'Survey is ON — click to turn OFF' : 'Survey is OFF — click to turn ON'}
-        className={`px-2 py-1 text-xs font-semibold rounded-lg border flex flex-col items-center gap-0.5 transition-colors disabled:opacity-50 cursor-pointer active:scale-95 select-none min-w-[40px] ${
+        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border flex flex-col items-center gap-0.5 transition-colors disabled:opacity-50 cursor-pointer active:scale-95 select-none min-w-[48px] ${
           status === 'PUBLISHED'
             ? 'border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
             : 'border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100'
@@ -103,7 +103,7 @@ export default function SurveyActions({ id, status }: { id: string; status: stri
           type="button"
           onClick={() => setShowShare(!showShare)}
           title="Share Survey"
-          className="px-2 py-1 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none min-w-[40px]"
+          className="px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 flex flex-col items-center gap-0.5 transition-colors cursor-pointer active:scale-95 select-none min-w-[48px]"
         >
           <Share2 className="w-3.5 h-3.5" />
           <span className="text-[10px] leading-none">Share</span>
