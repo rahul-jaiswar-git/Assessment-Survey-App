@@ -305,7 +305,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
   const handleSave = async (status: 'DRAFT' | 'PUBLISHED') => {
     setIsSubmitting(true)
     try {
-      await supabase
+      const { error: surveyError } = await supabase
         .from('surveys')
         .update({
           title,
@@ -320,7 +320,14 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
         })
         .eq('id', id)
 
-      await supabase.from('questions').delete().eq('survey_id', id)
+      if (surveyError) throw surveyError
+
+      const { error: deleteError } = await supabase
+        .from('questions')
+        .delete()
+        .eq('survey_id', id)
+
+      if (deleteError) throw deleteError
 
       const questionsToInsert = questions.map((q, index) => ({
         survey_id: id,
@@ -340,6 +347,15 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
         order_index: index,
         is_required: q.question_type === 'SECTION' ? false : q.is_required,
       }))
+
+      if (questionsToInsert.length > 0) {
+        const { error: questionsError } = await supabase
+          .from('questions')
+          .insert(questionsToInsert)
+
+        if (questionsError) throw questionsError
+      }
+
       router.push(`/admin/surveys/${id}/review`)
       router.refresh()
     } catch {
