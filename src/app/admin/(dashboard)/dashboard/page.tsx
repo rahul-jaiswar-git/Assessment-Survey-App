@@ -178,7 +178,7 @@ export default async function DashboardPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-6">Create New Survey</h2>
           <Link
             href="/admin/surveys/new"
-            className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors active:scale-95"
           >
             Get Started
           </Link>

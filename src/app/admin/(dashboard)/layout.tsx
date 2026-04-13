@@ -35,8 +35,8 @@ export default async function AdminDashboardLayout({
     <div className="min-h-screen bg-gray-50">
 
       {/* ── Mobile top bar ── */}
-      <div className="lg:hidden flex items-center justify-between bg-gray-900 text-white px-4 py-3">
-        <Link href="/admin/dashboard" className="text-lg font-bold flex items-center gap-2">
+      <div className="lg:hidden flex items-center justify-between text-gray-900 px-4 py-3 border-b border-gray-300 shadow-sm" style={{ backgroundColor: '#BDC3C7' }}>
+        <Link href="/admin/dashboard" className="text-lg font-bold flex items-center gap-2 text-gray-900">
           <LayoutDashboard className="w-5 h-5" />
           Admin Panel
         </Link>
@@ -48,9 +48,9 @@ export default async function AdminDashboardLayout({
 
       <div className="flex">
         {/* ── Desktop sidebar — hidden on mobile ── */}
-        <aside className="hidden lg:flex w-56 bg-gray-900 text-white flex-col min-h-screen fixed top-0 left-0">
+        <aside className="hidden lg:flex w-56 text-gray-900 flex-col min-h-screen fixed top-0 left-0 border-r border-gray-300 shadow-sm" style={{ backgroundColor: '#BDC3C7' }}>
           <div className="p-6">
-            <Link href="/admin/dashboard" className="text-xl font-bold flex items-center gap-2">
+            <Link href="/admin/dashboard" className="text-xl font-bold flex items-center gap-2 text-gray-900">
               <LayoutDashboard className="w-6 h-6" />
               Admin Panel
             </Link>
@@ -58,18 +58,18 @@ export default async function AdminDashboardLayout({
           <nav className="flex-1 px-4 space-y-2">
             <AdminNav />
           </nav>
-          <div className="p-4 border-t border-gray-800">
+          <div className="p-4 border-t border-gray-400">
             <div className="flex items-center gap-3 px-2 py-3 mb-2">
               <UserCircle className="w-8 h-8 text-gray-400" />
               <div className="overflow-hidden">
-                <p className="text-sm font-medium truncate">{user.email}</p>
-                <p className="text-xs text-gray-500 capitalize">{role.toLowerCase().replace('_', ' ')}</p>
+                <p className="text-sm font-medium truncate text-gray-900">{user.email}</p>
+                <p className="text-xs text-gray-600 capitalize">{role.toLowerCase().replace('_', ' ')}</p>
               </div>
             </div>
             <form action="/auth/signout" method="post">
               <button
                 type="submit"
-                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-400 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
