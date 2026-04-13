@@ -587,7 +587,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
             <button
               type="button"
               onClick={exportToExcel}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors active:scale-95"
             >
               <FileSpreadsheet className="w-4 h-4" />
               Export Excel
@@ -596,7 +596,7 @@ export default function AnalyticsView({ surveys, selectedSurvey, responses }: An
             <button
               type="button"
               onClick={() => exportToPDF()}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors active:scale-95"
             >
               <FilePdf className="w-4 h-4" />
               Export PDF

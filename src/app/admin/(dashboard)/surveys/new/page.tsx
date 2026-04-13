@@ -941,7 +941,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
             type="button"
             disabled={isSubmitting}
             onClick={(e) => handleSubmit(e, 'DRAFT')}
-            className="px-6 py-2 border border-gray-900 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="px-6 py-2 border border-gray-900 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 active:scale-95"
           >
             Save as Draft
           </button>
@@ -949,7 +949,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
             type="button"
             disabled={isSubmitting}
             onClick={(e) => handleSubmit(e, 'PUBLISHED')}
-            className="px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center gap-2 active:scale-95"
           >
             <Save className="w-4 h-4" />
             Publish Survey
