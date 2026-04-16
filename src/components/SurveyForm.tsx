@@ -132,7 +132,7 @@ export default function SurveyForm({
     return (
       <div className="bg-white p-12 rounded-2xl shadow-xl text-center">
         <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Thank You!</h2>
         <p className="text-gray-600 mb-8">Your response has been successfully recorded.</p>
         <button
           onClick={() => (window.location.href = '/')}
@@ -166,7 +166,7 @@ export default function SurveyForm({
       onCut={(e) => e.preventDefault()}
       onPaste={(e) => e.preventDefault()}
       onContextMenu={(e) => e.preventDefault()}
-      className="space-y-6 pb-20 select-none"
+      className="space-y-6 pb-6 select-none"
     >
       {isDraft && (
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-xl">
@@ -217,219 +217,272 @@ export default function SurveyForm({
       {/* ── Question card ── */}
       {question && (
         <div
-          className={`bg-white p-8 rounded-2xl shadow-sm border border-gray-100 ${
+          className={`bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden ${
             isSection ? 'min-h-[180px]' : 'min-h-[280px]'
           }`}
         >
-          {!isSection && (
-            <label className="block text-lg font-semibold text-gray-900 mb-4">
-              {question.question_text}
-              {question.is_required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-          )}
-
-          {isSection && (
-            <div className="py-2">
-              <h2 className="text-2xl font-bold text-gray-900 mb-1">{question.question_text}</h2>
-              {(question.options as any)?.description && (
-                <p className="text-gray-500 text-sm">{(question.options as any).description}</p>
+          {/* ── Top navigation bar inside card ── */}
+          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 bg-gray-50">
+            <div>
+              {allowPrevious && (
+                <button
+                  type="button"
+                  onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+                  disabled={currentIndex === 0}
+                  className="px-4 py-1.5 border border-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-white disabled:opacity-0 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 select-none"
+                >
+                  ← Previous
+                </button>
               )}
-              <p className="text-xs text-gray-400 mt-3">
-                Click Next to continue to the questions in this section.
-              </p>
             </div>
-          )}
 
-          {question.question_type === 'SHORT_TEXT' && (
-            <input
-              type="text"
-              required={question.is_required}
-              value={answers[question.id] || ''}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
-              placeholder="Your answer"
-            />
-          )}
-
-          {question.question_type === 'LONG_TEXT' && (
-            <textarea
-              required={question.is_required}
-              value={answers[question.id] || ''}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
-              placeholder="Your answer"
-              rows={4}
-            />
-          )}
-
-          {question.question_type === 'SINGLE_CHOICE' && (
-            <div className="space-y-3">
-              {question.options.map((option: string) => (
-                <label key={option} className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="radio"
-                    name={question.id}
-                    required={question.is_required}
-                    checked={answers[question.id] === option}
-                    onChange={() => handleAnswerChange(question.id, option)}
-                    className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
-                  />
-                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                    {option}
-                  </span>
-                </label>
-              ))}
+            <div>
+              {currentIndex < questions.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const q = questions[currentIndex]
+                    if (q.question_type !== 'SECTION' && q.is_required && !answers[q.id]) {
+                      setError('Please answer this question before continuing.')
+                      return
+                    }
+                    setError(null)
+                    setCurrentIndex((i) => i + 1)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="px-4 py-1.5 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-all cursor-pointer active:scale-95 select-none"
+                >
+                  Next →
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !!isDraft || isTimeUp}
+                  className="px-4 py-1.5 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 cursor-pointer active:scale-95 select-none"
+                >
+                  {isSubmitting ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" /> Submit
+                    </>
+                  )}
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
-          {question.question_type === 'MULTIPLE_CHOICE' && (
-            <div className="space-y-3">
-              {question.options.map((option: string) => (
-                <label key={option} className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={(answers[question.id] || []).includes(option)}
-                    onChange={(e) => handleCheckboxChange(question.id, option, e.target.checked)}
-                    className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
-                  />
-                  <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
-                    {option}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
+          <div className="p-8">
+            {!isSection && (
+              <label className="block text-base font-semibold text-gray-900 mb-4">
+                {question.question_text}
+                {question.is_required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+            )}
 
-          {question.question_type === 'QUIZ' && (
-            <div className="space-y-3">
-              {((question.options as any)?.choices || question.options || []).map(
-                (option: string) => (
+            {isSection && (
+              <div className="py-2">
+                <h2 className="text-lg font-bold text-gray-900 mb-1">{question.question_text}</h2>
+                {(question.options as any)?.description && (
+                  <p className="text-gray-500 text-sm">{(question.options as any).description}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-3">
+                  Click Next to continue to the questions in this section.
+                </p>
+              </div>
+            )}
+
+            {question.question_type === 'SHORT_TEXT' && (
+              <input
+                type="text"
+                required={question.is_required}
+                value={answers[question.id] || ''}
+                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                placeholder="Your answer"
+              />
+            )}
+
+            {question.question_type === 'LONG_TEXT' && (
+              <textarea
+                required={question.is_required}
+                value={answers[question.id] || ''}
+                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
+                placeholder="Your answer"
+                rows={4}
+              />
+            )}
+
+            {question.question_type === 'SINGLE_CHOICE' && (
+              <div className="space-y-3">
+                {question.options.map((option: string) => (
                   <label key={option} className="flex items-center gap-3 cursor-pointer group">
                     <input
                       type="radio"
                       name={question.id}
-                      value={option}
                       required={question.is_required}
                       checked={answers[question.id] === option}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      onChange={() => handleAnswerChange(question.id, option)}
                       className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
                     />
                     <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
                       {option}
                     </span>
                   </label>
-                )
-              )}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
 
-          {question.question_type === 'RATING' && (
-            <div className="flex items-center justify-between gap-2">
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <button
-                  key={rating}
-                  type="button"
-                  onClick={() => handleAnswerChange(question.id, rating)}
-                  className={`flex-1 py-3 px-1 rounded-lg border text-sm font-bold transition-all flex flex-col items-center justify-center ${
-                    answers[question.id] === rating
-                      ? 'bg-gray-900 border-gray-900 text-white'
-                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-900 hover:text-gray-900'
-                  }`}
-                >
-                  <span className="block text-sm font-bold">{rating}</span>
-                  {question.options?.[rating - 1] && (
-                    <span className="block text-xs text-current opacity-75 mt-0.5 leading-tight">
-                      {question.options?.[rating - 1]}
+            {question.question_type === 'MULTIPLE_CHOICE' && (
+              <div className="space-y-3">
+                {question.options.map((option: string) => (
+                  <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={(answers[question.id] || []).includes(option)}
+                      onChange={(e) => handleCheckboxChange(question.id, option, e.target.checked)}
+                      className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded"
+                    />
+                    <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                      {option}
                     </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+                  </label>
+                ))}
+              </div>
+            )}
 
-          {question.question_type === 'DATE' && (
-            <input
-              type="date"
-              required={question.is_required}
-              value={answers[question.id] || ''}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 bg-white"
-            />
-          )}
-
-          {question.question_type === 'IMAGE' && (() => {
-            const opts = question.options as any
-            // Support both new format { images: [], answerType: '' } and old format [url]
-            const images: string[] = Array.isArray(opts?.images)
-              ? opts.images.filter(Boolean)
-              : Array.isArray(opts)
-              ? opts.filter(Boolean)
-              : opts?.imageUrl
-              ? [opts.imageUrl]
-              : []
-            const answerType: string = opts?.answerType || 'SHORT_TEXT'
-
-            return (
-              <div className="space-y-4">
-                {/* Show all images in a grid */}
-                {images.length > 0 && (
-                  <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                    {images.map((url: string, i: number) => (
-                      <img
-                        key={i}
-                        src={url}
-                        alt={`Image ${i + 1}`}
-                        className="w-full rounded-xl border border-gray-100 object-contain max-h-72"
-                        draggable={false}
+            {question.question_type === 'QUIZ' && (
+              <div className="space-y-3">
+                {((question.options as any)?.choices || question.options || []).map(
+                  (option: string) => (
+                    <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                      <input
+                        type="radio"
+                        name={question.id}
+                        value={option}
+                        required={question.is_required}
+                        checked={answers[question.id] === option}
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                        className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
                       />
-                    ))}
-                  </div>
-                )}
-
-                {/* Answer input — changes based on answerType set by admin */}
-                {answerType === 'LONG_TEXT' && (
-                  <textarea
-                    required={question.is_required}
-                    value={answers[question.id] || ''}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                    rows={4}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
-                    placeholder="Your answer"
-                  />
-                )}
-
-                {answerType === 'SHORT_TEXT' && (
-                  <input
-                    type="text"
-                    required={question.is_required}
-                    value={answers[question.id] || ''}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
-                    placeholder="Your answer"
-                  />
-                )}
-
-                {answerType === 'SINGLE_CHOICE' && Array.isArray(opts?.choices) && opts.choices.length > 0 && (
-                  <div className="space-y-3">
-                    {opts.choices.map((option: string) => (
-                      <label key={option} className="flex items-center gap-3 cursor-pointer group">
-                        <input
-                          type="radio"
-                          name={question.id}
-                          value={option}
-                          required={question.is_required}
-                          checked={answers[question.id] === option}
-                          onChange={() => handleAnswerChange(question.id, option)}
-                          className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
-                        />
-                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors">{option}</span>
-                      </label>
-                    ))}
-                  </div>
+                      <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
+                        {option}
+                      </span>
+                    </label>
+                  )
                 )}
               </div>
-            )
-          })()}
+            )}
+
+            {question.question_type === 'RATING' && (
+              <div className="flex items-center justify-between gap-2">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    type="button"
+                    onClick={() => handleAnswerChange(question.id, rating)}
+                    className={`flex-1 py-3 px-1 rounded-lg border text-sm font-bold transition-all flex flex-col items-center justify-center ${
+                      answers[question.id] === rating
+                        ? 'bg-gray-900 border-gray-900 text-white'
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-900 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className="block text-sm font-bold">{rating}</span>
+                    {question.options?.[rating - 1] && (
+                      <span className="block text-xs text-current opacity-75 mt-0.5 leading-tight">
+                        {question.options?.[rating - 1]}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {question.question_type === 'DATE' && (
+              <input
+                type="date"
+                required={question.is_required}
+                value={answers[question.id] || ''}
+                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 bg-white"
+              />
+            )}
+
+            {question.question_type === 'IMAGE' && (() => {
+              const opts = question.options as any
+              // Support both new format { images: [], answerType: '' } and old format [url]
+              const images: string[] = Array.isArray(opts?.images)
+                ? opts.images.filter(Boolean)
+                : Array.isArray(opts)
+                ? opts.filter(Boolean)
+                : opts?.imageUrl
+                ? [opts.imageUrl]
+                : []
+              const answerType: string = opts?.answerType || 'SHORT_TEXT'
+
+              return (
+                <div className="space-y-4">
+                  {/* Show all images in a grid */}
+                  {images.length > 0 && (
+                    <div className={`grid gap-3 ${images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                      {images.map((url: string, i: number) => (
+                        <img
+                          key={i}
+                          src={url}
+                          alt={`Image ${i + 1}`}
+                          className="w-full rounded-xl border border-gray-100 object-contain max-h-72"
+                          draggable={false}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Answer input — changes based on answerType set by admin */}
+                  {answerType === 'LONG_TEXT' && (
+                    <textarea
+                      required={question.is_required}
+                      value={answers[question.id] || ''}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      rows={4}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all resize-none text-gray-900 placeholder:text-gray-500 bg-white"
+                      placeholder="Your answer"
+                    />
+                  )}
+
+                  {answerType === 'SHORT_TEXT' && (
+                    <input
+                      type="text"
+                      required={question.is_required}
+                      value={answers[question.id] || ''}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                      placeholder="Your answer"
+                    />
+                  )}
+
+                  {answerType === 'SINGLE_CHOICE' && Array.isArray(opts?.choices) && opts.choices.length > 0 && (
+                    <div className="space-y-3">
+                      {opts.choices.map((option: string) => (
+                        <label key={option} className="flex items-center gap-3 cursor-pointer group">
+                          <input
+                            type="radio"
+                            name={question.id}
+                            value={option}
+                            required={question.is_required}
+                            checked={answers[question.id] === option}
+                            onChange={() => handleAnswerChange(question.id, option)}
+                            className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
+                          />
+                          <span className="text-gray-700 group-hover:text-gray-900 transition-colors">{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
+          </div>
         </div>
       )}
 
@@ -440,55 +493,6 @@ export default function SurveyForm({
           {error}
         </div>
       )}
-
-      {/* ── Navigation ── */}
-      <div className="flex items-center justify-between gap-4">
-        {allowPrevious ? (
-          <button
-            type="button"
-            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            disabled={currentIndex === 0}
-            className="px-6 py-3 border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-0 disabled:pointer-events-none transition-all cursor-pointer active:scale-95 select-none"
-          >
-            ← Previous
-          </button>
-        ) : (
-          <div />
-        )}
-
-        {currentIndex < questions.length - 1 ? (
-          <button
-            type="button"
-            onClick={() => {
-              const q = questions[currentIndex]
-              if (q.question_type !== 'SECTION' && q.is_required && !answers[q.id]) {
-                setError('Please answer this question before continuing.')
-                return
-              }
-              setError(null)
-              setCurrentIndex((i) => i + 1)
-              window.scrollTo({ top: 0, behavior: 'smooth' })
-            }}
-            className="px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all cursor-pointer active:scale-95 select-none"
-          >
-            Next →
-          </button>
-        ) : (
-          <button
-            type="submit"
-            disabled={isSubmitting || !!isDraft || isTimeUp}
-            className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 cursor-pointer active:scale-95 select-none"
-          >
-            {isSubmitting ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <Send className="w-4 h-4" /> Submit Response
-              </>
-            )}
-          </button>
-        )}
-      </div>
     </form>
   )
 }

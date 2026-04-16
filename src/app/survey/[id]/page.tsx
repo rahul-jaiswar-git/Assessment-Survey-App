@@ -135,7 +135,7 @@ export default async function PublicSurveyPage({
                 />
               )}
               <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold text-gray-900 mb-1 leading-tight">
+                <h1 className="text-xl font-bold text-gray-900 mb-1 leading-tight">
                   {survey.title}
                 </h1>
                 {survey.description && (

@@ -375,16 +375,11 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <Link href={`/admin/surveys/${id}/review`} className="text-sm text-gray-600 hover:text-gray-900">
-          ← Back to Review
-        </Link>
-        {hasResponses && (
-          <div className="px-3 py-2 text-sm rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200">
-            This survey has responses. Editing questions may affect existing response data.
-          </div>
-        )}
-      </div>
+      {hasResponses && (
+        <div className="px-3 py-2 mb-4 text-sm rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200">
+          This survey has responses. Editing questions may affect existing response data.
+        </div>
+      )}
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Survey</h1>
 
       <form className="space-y-8">
