@@ -479,6 +479,48 @@ export default function SurveyForm({
                       ))}
                     </div>
                   )}
+
+                  {answerType === 'QUIZ' && Array.isArray(opts?.choices) && opts.choices.length > 0 && (() => {
+                    const correctAnswer = opts?.correct || ''
+                    const submitted = !!answers[question.id]
+                    const selected = answers[question.id] as string | undefined
+                    const isCorrect = selected === correctAnswer
+                    return (
+                      <div className="space-y-3">
+                        {opts.choices.map((option: string) => {
+                          const isSelected = selected === option
+                          const showResult = submitted && isSelected
+                          return (
+                            <label
+                              key={option}
+                              className={`flex items-center gap-3 cursor-pointer group p-3 rounded-lg border transition-all ${
+                                showResult
+                                  ? isCorrect
+                                    ? 'border-emerald-400 bg-emerald-50'
+                                    : 'border-red-300 bg-red-50'
+                                  : isSelected
+                                  ? 'border-gray-400 bg-gray-50'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <input
+                                type="radio"
+                                name={question.id}
+                                value={option}
+                                required={question.is_required}
+                                checked={isSelected}
+                                onChange={() => handleAnswerChange(question.id, option)}
+                                className="w-4 h-4 text-gray-900 focus:ring-gray-900 border-gray-300"
+                              />
+                              <span className="text-gray-700 group-hover:text-gray-900 transition-colors flex-1">
+                                {option}
+                              </span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()}
                 </div>
               )
             })()}

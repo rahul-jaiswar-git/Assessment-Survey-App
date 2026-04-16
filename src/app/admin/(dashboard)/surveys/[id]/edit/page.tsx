@@ -17,6 +17,7 @@ interface Question {
   correct_answer: string
   is_required: boolean
   imageChoices?: string[]
+  imageCorrect?: string
 }
 
 export default function EditSurveyPage() {
@@ -195,6 +196,9 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
         const normQs: Question[] = (qs || []).map((q: any) => {
           let options: string[] = []
           let correctAns = ''
+          let imageChoices: string[] = []
+          let imageCorrect = ''
+
           if (q.question_type === 'QUIZ' && q.options && typeof q.options === 'object') {
             const obj = q.options as any
             options = Array.isArray(obj.choices) ? obj.choices : []
@@ -206,6 +210,12 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
             const obj = q.options as any
             options = Array.isArray(obj.images) ? obj.images : []
             correctAns = obj.answerType || 'SHORT_TEXT'
+            if (correctAns === 'SINGLE_CHOICE' || correctAns === 'QUIZ') {
+              imageChoices = Array.isArray(obj.choices) ? obj.choices : []
+              if (correctAns === 'QUIZ') {
+                imageCorrect = obj.correct || ''
+              }
+            }
           } else {
             options = Array.isArray(q.options) ? q.options : []
           }
@@ -216,6 +226,8 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
             options,
             correct_answer: correctAns,
             is_required: q.question_type === 'SECTION' ? false : !!q.is_required,
+            imageChoices,
+            imageCorrect,
           }
         })
         setQuestions(normQs.length ? normQs : [{
@@ -337,7 +349,10 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           ? {
               images: (q.options || []).filter(Boolean),
               answerType: q.correct_answer || 'SHORT_TEXT',
-              choices: q.correct_answer === 'SINGLE_CHOICE' ? (q.imageChoices || []) : []
+              choices: (q.correct_answer === 'SINGLE_CHOICE' || q.correct_answer === 'QUIZ')
+                ? (q.imageChoices || [])
+                : [],
+              correct: q.correct_answer === 'QUIZ' ? (q.imageCorrect || '') : null,
             }
           : q.question_type === 'SECTION'
           ? { description: q.options?.[0] || '' }
@@ -617,172 +632,118 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
         </div>
 
         <div className="space-y-4">
-          {questions.map((question, qIndex) => (
-            <div
-              key={question.id}
-              className={`p-8 rounded-2xl shadow-sm border relative group ${
-                question.question_type === 'SECTION'
-                  ? 'bg-blue-50 border-blue-200'
-                  : 'bg-white border-gray-100'
-              }`}
-            >
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-gray-200 rounded-l-2xl transition-colors" />
+          {questions.map((question, qIndex) => {
+            // Count only non-SECTION questions up to and including this one
+            const questionNumber = question.question_type === 'SECTION'
+              ? null
+              : questions.slice(0, qIndex + 1).filter(q => q.question_type !== 'SECTION').length
 
-              {question.question_type === 'SECTION' ? (
-                <div className="space-y-4">
-                  <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                    Section Divider
-                  </div>
-                  <input
-                    type="text"
-                    value={question.question_text}
-                    onChange={(e) => updateQuestion(question.id, { question_text: e.target.value })}
-                    className="w-full px-4 py-2 text-2xl font-bold border-b border-blue-200 focus:border-blue-500 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-blue-50"
-                    placeholder="Section Title e.g. Discipline"
-                  />
-                  <textarea
-                    value={question.options?.[0] ?? ''}
-                    onChange={(e) => updateOption(question.id, 0, e.target.value)}
-                    className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
-                    placeholder="Optional description for this section"
-                    rows={2}
-                  />
-                </div>
-              ) : (
-                <>
-                  <div className="flex items-start justify-between gap-4 mb-6">
-                    {/* Up / Down reorder buttons */}
-                    <div className="flex flex-col gap-1 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => moveQuestion(qIndex, 'up')}
-                        disabled={qIndex === 0}
-                        title="Move question up"
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-95"
-                      >
-                        <ArrowUp className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveQuestion(qIndex, 'down')}
-                        disabled={qIndex === questions.length - 1}
-                        title="Move question down"
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-95"
-                      >
-                        <ArrowDown className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="flex-1">
-                      <span className="text-xs font-bold text-gray-400 mb-1 block">
-                        Q{qIndex + 1}
-                      </span>
-                      <input
-                        type="text"
-                        value={question.question_text}
-                        onChange={(e) => updateQuestion(question.id, { question_text: e.target.value })}
-                        className="w-full px-4 py-2 text-lg font-semibold border-b border-gray-100 focus:border-gray-900 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
-                        placeholder={`Question ${qIndex + 1}`}
-                      />
-                    </div>
-                    <select
-                      value={question.question_type}
-                      onChange={(e) => {
-                        const newType = e.target.value as QuestionType
-                        let resetOptions: string[] = []
-                        if (newType === 'RATING') {
-                          resetOptions = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
-                        } else if (newType === 'QUIZ') {
-                          resetOptions = ['', '', '']
-                        } else if (newType === 'SECTION') {
-                          resetOptions = ['']
-                        } else if (newType === 'DATE') {
-                          resetOptions = []
-                        } else if (newType === 'IMAGE') {
-                          resetOptions = []
-                        } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
-                          resetOptions = ['']
-                        }
-                        updateQuestion(question.id, { question_type: newType, options: resetOptions, correct_answer: newType === 'QUIZ' ? '' : '' , ...(newType === 'SECTION' ? { is_required: false } : {}) })
-                      }}
-                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
-                    >
-                      <option value="SHORT_TEXT">Short Text</option>
-                      <option value="LONG_TEXT">Long Text</option>
-                      <option value="SINGLE_CHOICE">Single Choice</option>
-                      <option value="MULTIPLE_CHOICE">Multiple Choice</option>
-                      <option value="RATING">Rating (1–5)</option>
-                      <option value="QUIZ">Quiz (Correct Answer)</option>
-                      <option value="SECTION">Section</option>
-                      <option value="DATE">Date</option>
-                      <option value="IMAGE">Image Question</option>
-                    </select>
-                  </div>
+            return (
+              <div
+                key={question.id}
+                className={`p-8 rounded-2xl shadow-sm border relative group ${
+                  question.question_type === 'SECTION'
+                    ? 'bg-blue-50 border-blue-200'
+                    : 'bg-white border-gray-100'
+                }`}
+              >
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-transparent group-hover:bg-gray-200 rounded-l-2xl transition-colors" />
 
-              {(question.question_type === 'SINGLE_CHOICE' || question.question_type === 'MULTIPLE_CHOICE') && (
-                <div className="space-y-3 ml-4 mb-6">
-                  {question.options.map((option, oIndex) => (
-                    <div key={oIndex} className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full border-2 ${question.question_type === 'SINGLE_CHOICE' ? 'rounded-full' : 'rounded-sm'} border-gray-300`} />
-                      <input
-                        type="text"
-                        value={option}
-                        onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
-                        className="flex-1 px-2 py-1 border-b border-transparent focus:border-gray-200 outline-none text-gray-900 placeholder:text-gray-500 bg-white"
-                        placeholder={`Option ${oIndex + 1}`}
-                      />
-                      {question.options.length > 1 && (
+                {question.question_type === 'SECTION' ? (
+                  <div className="space-y-4">
+                    <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                      Section Divider
+                    </div>
+                    <input
+                      type="text"
+                      value={question.question_text}
+                      onChange={(e) => updateQuestion(question.id, { question_text: e.target.value })}
+                      className="w-full px-4 py-2 text-2xl font-bold border-b border-blue-200 focus:border-blue-500 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-blue-50"
+                      placeholder="Section Title e.g. Discipline"
+                    />
+                    <textarea
+                      value={question.options?.[0] ?? ''}
+                      onChange={(e) => updateOption(question.id, 0, e.target.value)}
+                      className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                      placeholder="Optional description for this section"
+                      rows={2}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-between gap-4 mb-6">
+                      {/* Up / Down reorder buttons */}
+                      <div className="flex flex-col gap-1 pt-1">
                         <button
                           type="button"
-                          onClick={() => removeOption(question.id, oIndex)}
-                          className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                          onClick={() => moveQuestion(qIndex, 'up')}
+                          disabled={qIndex === 0}
+                          title="Move question up"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-95"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <ArrowUp className="w-4 h-4" />
                         </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => addOption(question.id)}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700 ml-7"
-                  >
-                    + Add Option
-                  </button>
-                </div>
-              )}
-
-              {question.question_type === 'RATING' && (
-                <div className="ml-4 mb-6">
-                  <label className="block text-sm font-medium text-gray-700">Rating Labels</label>
-                  <p className="text-xs text-gray-500">
-                    Customize the description for each rating value (1 = first label, 5 = last label)
-                  </p>
-                  <div className="space-y-2 mt-3">
-                    {[1, 2, 3, 4, 5].map((num, idx) => (
-                      <div key={num} className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 text-sm font-bold flex items-center justify-center">
-                          {num}
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => moveQuestion(qIndex, 'down')}
+                          disabled={qIndex === questions.length - 1}
+                          title="Move question down"
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-95"
+                        >
+                          <ArrowDown className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex-1">
+                        <span className="text-xs font-bold text-gray-400 mb-1 block">
+                          {questionNumber !== null ? `Q${questionNumber}` : 'Section'}
+                        </span>
                         <input
                           type="text"
-                          value={question.options?.[idx] ?? ''}
-                          onChange={(e) => updateOption(question.id, idx, e.target.value)}
-                          className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none"
-                          placeholder={`Label for ${num}`}
+                          value={question.question_text}
+                          onChange={(e) => updateQuestion(question.id, { question_text: e.target.value })}
+                          className="w-full px-4 py-2 text-lg font-semibold border-b border-gray-100 focus:border-gray-900 outline-none transition-all text-gray-900 placeholder:text-gray-500 bg-white"
+                          placeholder={`Question ${questionNumber}`}
                         />
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      <select
+                        value={question.question_type}
+                        onChange={(e) => {
+                          const newType = e.target.value as QuestionType
+                          let resetOptions: string[] = []
+                          if (newType === 'RATING') {
+                            resetOptions = ['Extremely Good', 'Good', 'Neutral', 'Bad', 'Extremely Bad']
+                          } else if (newType === 'QUIZ') {
+                            resetOptions = ['', '', '']
+                          } else if (newType === 'SECTION') {
+                            resetOptions = ['']
+                          } else if (newType === 'DATE') {
+                            resetOptions = []
+                          } else if (newType === 'IMAGE') {
+                            resetOptions = []
+                          } else if (newType === 'SINGLE_CHOICE' || newType === 'MULTIPLE_CHOICE') {
+                            resetOptions = ['']
+                          }
+                          updateQuestion(question.id, { question_type: newType, options: resetOptions, correct_answer: newType === 'QUIZ' ? '' : '' , ...(newType === 'SECTION' ? { is_required: false } : {}) })
+                        }}
+                        className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white"
+                      >
+                        <option value="SHORT_TEXT">Short Text</option>
+                        <option value="LONG_TEXT">Long Text</option>
+                        <option value="SINGLE_CHOICE">Single Choice</option>
+                        <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                        <option value="RATING">Rating (1–5)</option>
+                        <option value="QUIZ">Quiz (Correct Answer)</option>
+                        <option value="SECTION">Section</option>
+                        <option value="DATE">Date</option>
+                        <option value="IMAGE">Image Question</option>
+                      </select>
+                    </div>
 
-              {question.question_type === 'QUIZ' && (
-                <div className="ml-4 mb-6">
-                  <label className="block text-sm font-medium text-gray-700">Answer Options</label>
-                  <div className="space-y-3 mt-2">
+                {(question.question_type === 'SINGLE_CHOICE' || question.question_type === 'MULTIPLE_CHOICE') && (
+                  <div className="space-y-3 ml-4 mb-6">
                     {question.options.map((option, oIndex) => (
                       <div key={oIndex} className="flex items-center gap-3">
-                        <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
+                        <div className={`w-4 h-4 rounded-full border-2 ${question.question_type === 'SINGLE_CHOICE' ? 'rounded-full' : 'rounded-sm'} border-gray-300`} />
                         <input
                           type="text"
                           value={option}
@@ -809,157 +770,285 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                       + Add Option
                     </button>
                   </div>
+                )}
 
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Correct Answer <span className="ml-1 text-emerald-600 text-xs">✓ This will be auto-graded</span>
-                    </label>
-                    {question.options.filter((o) => o.trim() !== '').length > 0 ? (
-                      <select
-                        value={question.correct_answer}
-                        onChange={(e) => updateQuestion(question.id, { correct_answer: e.target.value })}
-                        className="mt-1 w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
-                      >
-                        <option value="" disabled>Select correct answer</option>
-                        {question.options
-                          .filter((o) => o.trim() !== '')
-                          .map((opt, idx) => (
-                            <option key={idx} value={opt}>{opt}</option>
-                          ))}
-                      </select>
-                    ) : (
-                      <div className="mt-1 text-xs text-gray-500">Add options above first</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {question.question_type === 'DATE' && (
-                <div className="ml-4 mb-6">
-                  <label className="block text-sm font-medium text-gray-700">Date Input</label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Respondents will see a date picker to select a date.
-                  </p>
-                  <div className="text-sm text-gray-600">
-                    No additional configuration needed.
-                  </div>
-                </div>
-              )}
-
-              {question.question_type === 'IMAGE' && (
-                <div className="ml-4 mb-6 space-y-3">
-                  <label className="block text-sm font-medium text-gray-700">Question Images</label>
-                  <p className="text-xs text-gray-500">
-                    Upload one or more images. Respondents will see all images above the answer input.
-                  </p>
-
-                  {/* Show all uploaded images */}
-                  {(question.options || []).filter(Boolean).length > 0 && (
-                    <div className="flex flex-wrap gap-3">
-                      {(question.options || []).filter(Boolean).map((url, imgIdx) => (
-                        <div key={imgIdx} className="relative">
-                          <img
-                            src={url}
-                            alt={`Image ${imgIdx + 1}`}
-                            className="w-32 h-32 object-cover rounded-xl border border-gray-200"
+                {question.question_type === 'RATING' && (
+                  <div className="ml-4 mb-6">
+                    <label className="block text-sm font-medium text-gray-700">Rating Labels</label>
+                    <p className="text-xs text-gray-500">
+                      Customize the description for each rating value (1 = first label, 5 = last label)
+                    </p>
+                    <div className="space-y-2 mt-3">
+                      {[1, 2, 3, 4, 5].map((num, idx) => (
+                        <div key={num} className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 text-sm font-bold flex items-center justify-center">
+                            {num}
+                          </div>
+                          <input
+                            type="text"
+                            value={question.options?.[idx] ?? ''}
+                            onChange={(e) => updateOption(question.id, idx, e.target.value)}
+                            className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none"
+                            placeholder={`Label for ${num}`}
                           />
-                          <button
-                            type="button"
-                            onClick={() => removeOption(question.id, imgIdx)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 cursor-pointer"
-                          >
-                            ×
-                          </button>
                         </div>
                       ))}
                     </div>
-                  )}
-
-                  {/* Always show upload button */}
-                  <div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) handleImageUpload(question.id, file)
-                        e.target.value = ''
-                      }}
-                      disabled={imageUploading[question.id]}
-                      className="hidden"
-                      id={`image-upload-${question.id}`}
-                    />
-                    <label
-                      htmlFor={`image-upload-${question.id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer text-sm text-gray-600 hover:border-gray-500 hover:text-gray-800 transition-colors"
-                    >
-                      {imageUploading[question.id] ? (
-                        <><div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> Uploading...</>
-                      ) : (
-                        <>+ Add Image</>
-                      )}
-                    </label>
                   </div>
+                )}
 
-                  {/* Answer type selector */}
-                  <div className="mt-2">
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Answer Type</label>
-                    <select
-                      value={question.correct_answer || 'SHORT_TEXT'}
-                      onChange={(e) => updateQuestion(question.id, { correct_answer: e.target.value })}
-                      className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
-                    >
-                      <option value="SHORT_TEXT">Short Text Answer</option>
-                      <option value="LONG_TEXT">Long Text Answer</option>
-                      <option value="SINGLE_CHOICE">Single Choice</option>
-                    </select>
-                  </div>
-
-                  {/* Choices input section for SINGLE_CHOICE answer type */}
-                  {question.correct_answer === 'SINGLE_CHOICE' && (
-                    <div className="mt-3 space-y-2">
-                      <label className="block text-xs font-medium text-gray-600">Answer Choices</label>
-                      {(question.imageChoices || []).map((choice: string, idx: number) => (
-                        <div key={idx} className="flex items-center gap-2">
+                {question.question_type === 'QUIZ' && (
+                  <div className="ml-4 mb-6">
+                    <label className="block text-sm font-medium text-gray-700">Answer Options</label>
+                    <div className="space-y-3 mt-2">
+                      {question.options.map((option, oIndex) => (
+                        <div key={oIndex} className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full border-2 border-gray-300" />
                           <input
                             type="text"
-                            value={choice}
-                            onChange={(e) => {
-                              const newChoices = [...(question.imageChoices || [])]
-                              newChoices[idx] = e.target.value
-                              updateQuestion(question.id, { imageChoices: newChoices })
-                            }}
-                            placeholder={`Choice ${idx + 1}`}
-                            className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none"
+                            value={option}
+                            onChange={(e) => updateOption(question.id, oIndex, e.target.value)}
+                            className="flex-1 px-2 py-1 border-b border-transparent focus:border-gray-200 outline-none text-gray-900 placeholder:text-gray-500 bg-white"
+                            placeholder={`Option ${oIndex + 1}`}
                           />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newChoices = (question.imageChoices || []).filter((_: any, i: number) => i !== idx)
-                              updateQuestion(question.id, { imageChoices: newChoices })
-                            }}
-                            className="p-1 text-gray-400 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {question.options.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeOption(question.id, oIndex)}
+                              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       ))}
                       <button
                         type="button"
-                        onClick={() => {
-                          const newChoices = [...(question.imageChoices || []), '']
-                          updateQuestion(question.id, { imageChoices: newChoices })
-                        }}
-                        className="text-sm text-blue-600 hover:text-blue-700"
+                        onClick={() => addOption(question.id)}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-700 ml-7"
                       >
-                        + Add Choice
+                        + Add Option
                       </button>
                     </div>
-                  )}
-                </div>
-              )}
-                </>
-              )}
+
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Correct Answer <span className="ml-1 text-emerald-600 text-xs">✓ This will be auto-graded</span>
+                      </label>
+                      {question.options.filter((o) => o.trim() !== '').length > 0 ? (
+                        <select
+                          value={question.correct_answer}
+                          onChange={(e) => updateQuestion(question.id, { correct_answer: e.target.value })}
+                          className="mt-1 w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                        >
+                          <option value="" disabled>Select correct answer</option>
+                          {question.options
+                            .filter((o) => o.trim() !== '')
+                            .map((opt, idx) => (
+                              <option key={idx} value={opt}>{opt}</option>
+                            ))}
+                        </select>
+                      ) : (
+                        <div className="mt-1 text-xs text-gray-500">Add options above first</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {question.question_type === 'DATE' && (
+                  <div className="ml-4 mb-6">
+                    <label className="block text-sm font-medium text-gray-700">Date Input</label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Respondents will see a date picker to select a date.
+                    </p>
+                    <div className="text-sm text-gray-600">
+                      No additional configuration needed.
+                    </div>
+                  </div>
+                )}
+
+                {question.question_type === 'IMAGE' && (
+                  <div className="ml-4 mb-6 space-y-3">
+                    <label className="block text-sm font-medium text-gray-700">Question Images</label>
+                    <p className="text-xs text-gray-500">
+                      Upload one or more images. Respondents will see all images above the answer input.
+                    </p>
+
+                    {/* Show all uploaded images */}
+                    {(question.options || []).filter(Boolean).length > 0 && (
+                      <div className="flex flex-wrap gap-3">
+                        {(question.options || []).filter(Boolean).map((url, imgIdx) => (
+                          <div key={imgIdx} className="relative">
+                            <img
+                              src={url}
+                              alt={`Image ${imgIdx + 1}`}
+                              className="w-32 h-32 object-cover rounded-xl border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeOption(question.id, imgIdx)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 cursor-pointer"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Always show upload button */}
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0]
+                          if (file) handleImageUpload(question.id, file)
+                          e.target.value = ''
+                        }}
+                        disabled={imageUploading[question.id]}
+                        className="hidden"
+                        id={`image-upload-${question.id}`}
+                      />
+                      <label
+                        htmlFor={`image-upload-${question.id}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer text-sm text-gray-600 hover:border-gray-500 hover:text-gray-800 transition-colors"
+                      >
+                        {imageUploading[question.id] ? (
+                          <><div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> Uploading...</>
+                        ) : (
+                          <>+ Add Image</>
+                        )}
+                      </label>
+                    </div>
+
+                    {/* Answer type selector */}
+                    <div className="mt-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Answer Type</label>
+                      <select
+                        value={question.correct_answer || 'SHORT_TEXT'}
+                        onChange={(e) => updateQuestion(question.id, { correct_answer: e.target.value })}
+                        className="px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-gray-900 outline-none cursor-pointer"
+                      >
+                        <option value="SHORT_TEXT">Short Text Answer</option>
+                        <option value="LONG_TEXT">Long Text Answer</option>
+                        <option value="SINGLE_CHOICE">Single Choice</option>
+                        <option value="QUIZ">Quiz (One Correct Answer)</option>
+                      </select>
+                    </div>
+
+                    {/* Choices input section for SINGLE_CHOICE answer type */}
+                    {question.correct_answer === 'SINGLE_CHOICE' && (
+                      <div className="mt-3 space-y-2">
+                        <label className="block text-xs font-medium text-gray-600">Answer Choices</label>
+                        {(question.imageChoices || []).map((choice: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={choice}
+                              onChange={(e) => {
+                                const newChoices = [...(question.imageChoices || [])]
+                                newChoices[idx] = e.target.value
+                                updateQuestion(question.id, { imageChoices: newChoices })
+                              }}
+                              placeholder={`Choice ${idx + 1}`}
+                              className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newChoices = (question.imageChoices || []).filter((_: any, i: number) => i !== idx)
+                                updateQuestion(question.id, { imageChoices: newChoices })
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newChoices = [...(question.imageChoices || []), '']
+                            updateQuestion(question.id, { imageChoices: newChoices })
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-700"
+                        >
+                          + Add Choice
+                        </button>
+                      </div>
+                    )}
+
+                    {/* QUIZ answer type for IMAGE — same choices UI but with a correct answer selector */}
+                    {question.correct_answer === 'QUIZ' && (
+                      <div className="mt-3 space-y-3">
+                        <label className="block text-xs font-medium text-gray-600">Answer Choices</label>
+                        {(question.imageChoices || []).map((choice: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={choice}
+                              onChange={(e) => {
+                                const newChoices = [...(question.imageChoices || [])]
+                                newChoices[idx] = e.target.value
+                                updateQuestion(question.id, { imageChoices: newChoices })
+                              }}
+                              placeholder={`Choice ${idx + 1}`}
+                              className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newChoices = (question.imageChoices || []).filter((_: any, i: number) => i !== idx)
+                                updateQuestion(question.id, { imageChoices: newChoices })
+                                // If deleted choice was the correct answer, reset it
+                                if (question.imageCorrect === choice) {
+                                  updateQuestion(question.id, { imageCorrect: '' })
+                                }
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newChoices = [...(question.imageChoices || []), '']
+                            updateQuestion(question.id, { imageChoices: newChoices })
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-700"
+                        >
+                          + Add Choice
+                        </button>
+
+                        {/* Correct answer picker */}
+                        {(question.imageChoices || []).filter((c: string) => c.trim() !== '').length > 0 && (
+                          <div className="mt-3">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Correct Answer <span className="text-emerald-600 text-xs ml-1">✓ Auto-graded</span>
+                            </label>
+                            <select
+                              value={question.imageCorrect || ''}
+                              onChange={(e) => updateQuestion(question.id, { imageCorrect: e.target.value })}
+                              className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm text-gray-900 bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                            >
+                              <option value="" disabled>Select correct answer</option>
+                              {(question.imageChoices || [])
+                                .filter((c: string) => c.trim() !== '')
+                                .map((opt: string, idx: number) => (
+                                  <option key={idx} value={opt}>{opt}</option>
+                                ))}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                  </>
+                )}
 
               <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-50">
                 {question.question_type !== 'SECTION' && (
