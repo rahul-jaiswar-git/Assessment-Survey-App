@@ -26,11 +26,6 @@ export default async function ReviewSurveyPage({
   if (!survey) {
     return (
       <div className="p-8">
-        <div className="mb-6">
-          <Link href="/admin/surveys" className="text-sm text-gray-600 hover:text-gray-900">
-            ← Back to Surveys
-          </Link>
-        </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Survey not found</h1>
           <p className="text-gray-600">The requested survey does not exist.</p>
@@ -41,10 +36,7 @@ export default async function ReviewSurveyPage({
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <Link href="/admin/surveys" className="text-sm text-gray-600 hover:text-gray-900">
-          ← Back to Surveys
-        </Link>
+      <div className="mb-6 flex items-center justify-end gap-2">
         <div className="flex items-center gap-2">
           <a
             href={`/survey/${id}?preview=true`}
