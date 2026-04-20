@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import { Eye } from 'lucide-react'
+import { Eye, ArrowLeft } from 'lucide-react'
 import { formatDateTime } from '@/lib/formatDate'
 
 export default async function ReviewSurveyPage({
@@ -36,7 +36,14 @@ export default async function ReviewSurveyPage({
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-center justify-end gap-2">
+      <div className="mb-6 flex items-center justify-between gap-2">
+        <Link
+          href="/admin/surveys"
+          className="inline-flex items-center gap-2 p-2 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="Back to Surveys"
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </Link>
         <div className="flex items-center gap-2">
           <a
             href={`/survey/${id}?preview=true`}

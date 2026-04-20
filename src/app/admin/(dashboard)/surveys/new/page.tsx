@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2, ArrowUp, ArrowDown, Save, ArrowLeft, Layers } from 'lucide-react'
@@ -52,6 +52,7 @@ export default function NewSurveyPage() {
     },
   ])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const submittingRef = useRef(false)
 
   const handleLogoUpload = async (file: File) => {
     setLogoUploading(true)
@@ -240,6 +241,8 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
 
   const handleSubmit = async (e: React.FormEvent, status: 'DRAFT' | 'PUBLISHED') => {
     e.preventDefault()
+    if (submittingRef.current) return
+    submittingRef.current = true
     setIsSubmitting(true)
 
     try {
@@ -300,6 +303,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
       console.error(err)
       alert('Failed to create survey')
     } finally {
+      submittingRef.current = false
       setIsSubmitting(false)
     }
   }

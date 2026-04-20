@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Trash2, ArrowUp, ArrowDown, Save, Layers } from 'lucide-react'
+import { Plus, Trash2, ArrowUp, ArrowDown, Save, Layers, ArrowLeft } from 'lucide-react'
 
 type QuestionType = 'SHORT_TEXT' | 'LONG_TEXT' | 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'RATING' | 'QUIZ' | 'SECTION' | 'DATE' | 'IMAGE'
 type Category = 'INDUSTRIAL' | 'PROFESSIONAL' | 'SKILL_ASSESSMENT'
@@ -28,6 +28,7 @@ export default function EditSurveyPage() {
 
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const submittingRef = useRef(false)
   const [hasResponses, setHasResponses] = useState(false)
 
   const [title, setTitle] = useState('')
@@ -315,6 +316,8 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
   }
 
   const handleSave = async (status: 'DRAFT' | 'PUBLISHED') => {
+    if (submittingRef.current) return
+    submittingRef.current = true
     setIsSubmitting(true)
     try {
       const { error: surveyError } = await supabase
@@ -376,6 +379,7 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
     } catch {
       alert('Failed to update survey')
     } finally {
+      submittingRef.current = false
       setIsSubmitting(false)
     }
   }
@@ -395,7 +399,12 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
           This survey has responses. Editing questions may affect existing response data.
         </div>
       )}
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Survey</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <Link href="/admin/surveys" className="p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Back to Surveys">
+          <ArrowLeft className="w-6 h-6" />
+        </Link>
+        <h1 className="text-3xl font-bold text-gray-900">Edit Survey</h1>
+      </div>
 
       <form className="space-y-8">
         <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
