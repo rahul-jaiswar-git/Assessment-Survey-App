@@ -1083,7 +1083,8 @@ const buildISOString = (date: string, hour: string, minute: string, ampm: 'AM' |
                 </button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
 
         <button
